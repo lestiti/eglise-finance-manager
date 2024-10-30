@@ -57,7 +57,7 @@ export const TransactionForm = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Montant (Ar)</label>
-            <Input type="number" placeholder="0 Ar" />
+            <Input type="number" placeholder="0 Ariary" />
           </div>
 
           <div className="space-y-2">

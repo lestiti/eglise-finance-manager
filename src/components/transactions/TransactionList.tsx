@@ -43,7 +43,7 @@ export const TransactionList = () => {
                 <p className="text-sm text-muted-foreground">{transaction.date}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold">{transaction.montant.toLocaleString()} Ar</p>
+                <p className="font-bold">{transaction.montant.toLocaleString()} Ariary</p>
                 <div className="flex gap-2 mt-2">
                   <Button size="sm" variant="outline" className="text-green-600">
                     <CheckCircle className="h-4 w-4 mr-1" />

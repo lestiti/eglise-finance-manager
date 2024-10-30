@@ -3,9 +3,9 @@ import { Euro } from "lucide-react";
 
 export const DashboardStats = () => {
   const stats = [
-    { title: "Total des dons", amount: "25,650 €", change: "+12%" },
-    { title: "Dépenses", amount: "18,230 €", change: "-5%" },
-    { title: "Solde de caisse", amount: "7,420 €", change: "+15%" },
+    { title: "Total des dons", amount: "25,650,000 Ariary", change: "+12%" },
+    { title: "Dépenses", amount: "18,230,000 Ariary", change: "-5%" },
+    { title: "Solde de caisse", amount: "7,420,000 Ariary", change: "+15%" },
     { title: "Projets en cours", amount: "3", change: "0" },
   ];
 
