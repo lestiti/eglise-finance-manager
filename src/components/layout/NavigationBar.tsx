@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Home, PlusCircle, LineChart, Users, Settings, Wallet, Banknote } from "lucide-react";
+import { Home, PlusCircle, LineChart, Users, Settings, Wallet, Banknote, FileText } from "lucide-react";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export const NavigationBar = () => {
             Transactions
           </Button>
           <Button variant="outline" onClick={() => navigate("/rapports")} className="flex items-center gap-2">
-            <LineChart className="h-5 w-5" />
+            <FileText className="h-5 w-5" />
             Rapports
           </Button>
           <Button variant="outline" onClick={() => navigate("/membres")} className="flex items-center gap-2">
