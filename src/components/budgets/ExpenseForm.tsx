@@ -57,6 +57,7 @@ export const ExpenseForm = () => {
                       <SelectItem value="jeunesse">Département Jeunesse</SelectItem>
                       <SelectItem value="evenements">Département Événements</SelectItem>
                       <SelectItem value="maintenance">Département Maintenance</SelectItem>
+                      <SelectItem value="communication">Département Communication</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
