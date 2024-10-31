@@ -166,7 +166,7 @@ export const LiquidityAnalysis = ({ data }: LiquidityAnalysisProps) => {
               </div>
               <Progress value={reserveUrgenceRatio} className="h-2" />
               {reserveUrgenceRatio < 100 && (
-                <Alert variant="warning" className="mt-2">
+                <Alert variant="default" className="mt-2 border-orange-200 bg-orange-50 text-orange-900">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Recommandation</AlertTitle>
                   <AlertDescription>
