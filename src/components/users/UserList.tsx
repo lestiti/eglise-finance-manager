@@ -26,49 +26,89 @@ interface User {
 export const UserList = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
-    const { data: profiles, error } = await supabase
-      .from('profiles')
-      .select('*');
+    try {
+      setLoading(true);
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*');
 
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des utilisateurs",
-        variant: "destructive",
-      });
-      return;
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la liste des utilisateurs",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setUsers(profiles || []);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
     }
-
-    setUsers(profiles || []);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer l'utilisateur",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Succès",
+        description: "L'utilisateur a été supprimé",
+      });
+      fetchUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer l'utilisateur",
+        description: "Une erreur est survenue lors de la suppression",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Succès",
-      description: "L'utilisateur a été supprimé",
-    });
-    fetchUsers();
   };
+
+  if (loading) {
+    return (
+      <Card className="p-6">
+        <div className="flex justify-center items-center h-32">
+          Chargement...
+        </div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-6">
+        <div className="flex justify-center items-center h-32 text-red-500">
+          {error}
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
