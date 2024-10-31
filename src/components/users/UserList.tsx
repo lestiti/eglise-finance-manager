@@ -16,10 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface User {
   id: string;
-  nom: string;
-  prenom: string;
-  email: string;
-  role: string;
+  nom: string | null;
+  prenom: string | null;
+  role: string | null;
+  telephone: string | null;
+  created_at: string;
 }
 
 export const UserList = () => {
@@ -76,7 +77,7 @@ export const UserList = () => {
           <TableRow>
             <TableHead>Nom</TableHead>
             <TableHead>Prénom</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead>Téléphone</TableHead>
             <TableHead>Rôle</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -86,7 +87,7 @@ export const UserList = () => {
             <TableRow key={user.id}>
               <TableCell>{user.nom || '-'}</TableCell>
               <TableCell>{user.prenom || '-'}</TableCell>
-              <TableCell>{user.email || '-'}</TableCell>
+              <TableCell>{user.telephone || '-'}</TableCell>
               <TableCell>
                 <Badge variant="outline">{user.role || 'utilisateur'}</Badge>
               </TableCell>
