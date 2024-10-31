@@ -39,6 +39,22 @@ export const NavigationBar = () => {
     }
   };
 
+  // Safe keyboard event handler
+  const handleKeyDown = (event: KeyboardEvent) => {
+    const key = event?.key?.toLowerCase();
+    if (!key) return;
+    
+    // Add keyboard shortcuts if needed
+  };
+
+  // Add event listener with safe handler
+  React.useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div className="bg-white border-b p-4 sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
