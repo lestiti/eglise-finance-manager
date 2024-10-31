@@ -23,7 +23,7 @@ const LoginPage = () => {
       <Card className="w-full max-w-md p-6 space-y-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold">Connexion</h2>
-          <p className="mt-2 text-gray-600">Connectez-vous à votre compte</p>
+          <p className="mt-2 text-gray-600">Accès réservé au personnel autorisé</p>
         </div>
         <Auth
           supabaseClient={supabase}
@@ -35,21 +35,25 @@ const LoginPage = () => {
               input: 'w-full',
             },
           }}
+          view="sign_in"
+          showLinks={false}
+          providers={[]}
           localization={{
             variables: {
               sign_in: {
-                email_label: 'Email',
+                email_label: 'Email professionnel',
                 password_label: 'Mot de passe',
                 button_label: 'Se connecter',
-              },
-              sign_up: {
-                email_label: 'Email',
-                password_label: 'Mot de passe',
-                button_label: "S'inscrire",
-              },
-            },
+                loading_button_label: 'Connexion en cours...',
+                email_input_placeholder: 'Votre email professionnel',
+                password_input_placeholder: 'Votre mot de passe',
+              }
+            }
           }}
         />
+        <p className="text-sm text-center text-gray-500">
+          Contactez l'administrateur système pour obtenir vos identifiants de connexion
+        </p>
       </Card>
     </div>
   );

@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -71,10 +74,12 @@ export const NavigationBar = () => {
             <FolderKanban className="h-5 w-5" />
             Projets
           </Button>
-          <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
-            <UserCog className="h-5 w-5" />
-            Utilisateurs
-          </Button>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
+              <UserCog className="h-5 w-5" />
+              Utilisateurs
+            </Button>
+          )}
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             Paramètres
