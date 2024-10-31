@@ -3,18 +3,38 @@ import { useNavigate } from "react-router-dom";
 import { 
   Home, 
   PlusCircle, 
-  LineChart, 
   Users, 
   Settings, 
   Wallet, 
   Banknote, 
   FileText,
   FolderKanban,
-  UserCog
+  UserCog,
+  LogOut
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      navigate("/auth/login");
+    }
+  };
 
   return (
     <div className="bg-white border-b p-4 sticky top-0 z-50">
@@ -58,6 +78,10 @@ export const NavigationBar = () => {
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             Paramètres
+          </Button>
+          <Button variant="destructive" onClick={handleLogout} className="flex items-center gap-2">
+            <LogOut className="h-5 w-5" />
+            Déconnexion
           </Button>
         </div>
       </div>
