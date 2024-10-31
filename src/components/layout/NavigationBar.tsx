@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -48,7 +49,7 @@ export const NavigationBar = () => {
   };
 
   // Add event listener with safe handler
-  React.useEffect(() => {
+  useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
