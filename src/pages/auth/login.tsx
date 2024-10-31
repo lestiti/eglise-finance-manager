@@ -9,6 +9,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Vérifier si l'utilisateur est déjà connecté
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate("/");
