@@ -9,7 +9,8 @@ import {
   Wallet, 
   Banknote, 
   FileText,
-  FolderKanban 
+  FolderKanban,
+  UserCog
 } from "lucide-react";
 
 export const NavigationBar = () => {
@@ -49,6 +50,10 @@ export const NavigationBar = () => {
           <Button variant="outline" onClick={() => navigate("/projets")} className="flex items-center gap-2">
             <FolderKanban className="h-5 w-5" />
             Projets
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
+            <UserCog className="h-5 w-5" />
+            Utilisateurs
           </Button>
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
