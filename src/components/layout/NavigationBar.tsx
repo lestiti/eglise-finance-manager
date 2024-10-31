@@ -1,6 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Home, PlusCircle, LineChart, Users, Settings, Wallet, Banknote, FileText } from "lucide-react";
+import { 
+  Home, 
+  PlusCircle, 
+  LineChart, 
+  Users, 
+  Settings, 
+  Wallet, 
+  Banknote, 
+  FileText,
+  FolderKanban 
+} from "lucide-react";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
@@ -35,6 +45,10 @@ export const NavigationBar = () => {
           <Button variant="outline" onClick={() => navigate("/tresorerie")} className="flex items-center gap-2">
             <Banknote className="h-5 w-5" />
             Trésorerie
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/projets")} className="flex items-center gap-2">
+            <FolderKanban className="h-5 w-5" />
+            Projets
           </Button>
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
