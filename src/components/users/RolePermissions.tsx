@@ -3,11 +3,33 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const RolePermissions = () => {
   const { toast } = useToast();
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Log the activity
+    const { error: logError } = await supabase
+      .from('activity_logs')
+      .insert({
+        action: 'update_permissions',
+        details: {
+          roles: ['admin', 'tresorier', 'responsable'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+    if (logError) {
+      console.error('Error logging activity:', logError);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les modifications",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Permissions mises à jour",
       description: "Les permissions ont été mises à jour avec succès",

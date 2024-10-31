@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -8,48 +9,58 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+
+interface ActivityLogEntry {
+  id: string;
+  user_id: string;
+  action: string;
+  details: any;
+  created_at: string;
+  profiles: {
+    nom: string;
+    prenom: string;
+  };
+}
 
 export const ActivityLog = () => {
-  const activities = [
-    {
-      id: 1,
-      date: "2024-02-20 14:30",
-      utilisateur: "RAKOTO Jean",
-      action: "Création d'utilisateur",
-      details: "Création du compte pour RABE Marie",
-      type: "create",
-    },
-    {
-      id: 2,
-      date: "2024-02-20 14:15",
-      utilisateur: "RABE Marie",
-      action: "Modification de rôle",
-      details: "Changement de rôle : Trésorier",
-      type: "update",
-    },
-    {
-      id: 3,
-      date: "2024-02-20 14:00",
-      utilisateur: "RAKOTO Jean",
-      action: "Connexion",
-      details: "Connexion au système",
-      type: "info",
-    },
-  ];
+  const [activities, setActivities] = useState<ActivityLogEntry[]>([]);
+  const { toast } = useToast();
 
-  const getBadgeVariant = (type: string | undefined) => {
-    if (!type) return "outline";
-    
-    switch (type.toLowerCase()) {
-      case "create":
-        return "default";
-      case "update":
-        return "secondary";
-      case "delete":
-        return "destructive";
-      default:
-        return "outline";
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select(`
+        *,
+        profiles (
+          nom,
+          prenom
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le journal d'activité",
+        variant: "destructive",
+      });
+      return;
     }
+
+    setActivities(data || []);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fr-FR', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
   };
 
   return (
@@ -66,14 +77,22 @@ export const ActivityLog = () => {
         <TableBody>
           {activities.map((activity) => (
             <TableRow key={activity.id}>
-              <TableCell>{activity.date || '-'}</TableCell>
-              <TableCell>{activity.utilisateur || '-'}</TableCell>
+              <TableCell>{formatDate(activity.created_at)}</TableCell>
               <TableCell>
-                <Badge variant={getBadgeVariant(activity.type)}>
-                  {activity.action || '-'}
+                {activity.profiles ? 
+                  `${activity.profiles.prenom} ${activity.profiles.nom}` : 
+                  'Utilisateur inconnu'}
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">
+                  {activity.action}
                 </Badge>
               </TableCell>
-              <TableCell>{activity.details || '-'}</TableCell>
+              <TableCell>
+                {activity.details ? 
+                  JSON.stringify(activity.details, null, 2) : 
+                  '-'}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -42,7 +43,46 @@ export const UserForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.motDePasse,
+      options: {
+        data: {
+          nom: values.nom,
+          prenom: values.prenom,
+          role: values.role,
+        },
+      },
+    });
+
+    if (signUpError) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Log the activity
+    const { error: logError } = await supabase
+      .from('activity_logs')
+      .insert({
+        user_id: data.user?.id,
+        action: 'create_user',
+        details: {
+          nom: values.nom,
+          prenom: values.prenom,
+          email: values.email,
+          role: values.role,
+        },
+      });
+
+    if (logError) {
+      console.error('Error logging activity:', logError);
+    }
+
     toast({
       title: "Utilisateur créé",
       description: "Le nouvel utilisateur a été créé avec succès",

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,36 +12,61 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface User {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  role: string;
+}
 
 export const UserList = () => {
   const { toast } = useToast();
+  const [users, setUsers] = useState<User[]>([]);
 
-  const users = [
-    {
-      id: 1,
-      nom: "RAKOTO",
-      prenom: "Jean",
-      email: "jean.rakoto@eglise.mg",
-      role: "Administrateur",
-      statut: "Actif",
-    },
-    {
-      id: 2,
-      nom: "RABE",
-      prenom: "Marie",
-      email: "marie.rabe@eglise.mg",
-      role: "Trésorier",
-      statut: "Actif",
-    },
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  const handleDelete = (id: number) => {
-    if (!id) return;
-    
+  const fetchUsers = async () => {
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('*');
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la liste des utilisateurs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUsers(profiles || []);
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
-      title: "Utilisateur supprimé",
-      description: "L'utilisateur a été supprimé avec succès",
+      title: "Succès",
+      description: "L'utilisateur a été supprimé",
     });
+    fetchUsers();
   };
 
   return (
@@ -52,7 +78,6 @@ export const UserList = () => {
             <TableHead>Prénom</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Rôle</TableHead>
-            <TableHead>Statut</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -63,12 +88,7 @@ export const UserList = () => {
               <TableCell>{user.prenom || '-'}</TableCell>
               <TableCell>{user.email || '-'}</TableCell>
               <TableCell>
-                <Badge variant="outline">{user.role || '-'}</Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={user.statut === "Actif" ? "default" : "destructive"}>
-                  {user.statut || '-'}
-                </Badge>
+                <Badge variant="outline">{user.role || 'utilisateur'}</Badge>
               </TableCell>
               <TableCell className="space-x-2">
                 <Button variant="outline" size="icon">
