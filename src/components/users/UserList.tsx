@@ -35,6 +35,8 @@ export const UserList = () => {
   ];
 
   const handleDelete = (id: number) => {
+    if (!id) return;
+    
     toast({
       title: "Utilisateur supprimé",
       description: "L'utilisateur a été supprimé avec succès",
@@ -57,15 +59,15 @@ export const UserList = () => {
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.nom}</TableCell>
-              <TableCell>{user.prenom}</TableCell>
-              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.nom || '-'}</TableCell>
+              <TableCell>{user.prenom || '-'}</TableCell>
+              <TableCell>{user.email || '-'}</TableCell>
               <TableCell>
-                <Badge variant="outline">{user.role}</Badge>
+                <Badge variant="outline">{user.role || '-'}</Badge>
               </TableCell>
               <TableCell>
                 <Badge variant={user.statut === "Actif" ? "default" : "destructive"}>
-                  {user.statut}
+                  {user.statut || '-'}
                 </Badge>
               </TableCell>
               <TableCell className="space-x-2">

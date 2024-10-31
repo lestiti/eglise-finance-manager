@@ -37,8 +37,10 @@ export const ActivityLog = () => {
     },
   ];
 
-  const getBadgeVariant = (type: string) => {
-    switch (type) {
+  const getBadgeVariant = (type: string | undefined) => {
+    if (!type) return "outline";
+    
+    switch (type.toLowerCase()) {
       case "create":
         return "default";
       case "update":
@@ -64,14 +66,14 @@ export const ActivityLog = () => {
         <TableBody>
           {activities.map((activity) => (
             <TableRow key={activity.id}>
-              <TableCell>{activity.date}</TableCell>
-              <TableCell>{activity.utilisateur}</TableCell>
+              <TableCell>{activity.date || '-'}</TableCell>
+              <TableCell>{activity.utilisateur || '-'}</TableCell>
               <TableCell>
                 <Badge variant={getBadgeVariant(activity.type)}>
-                  {activity.action}
+                  {activity.action || '-'}
                 </Badge>
               </TableCell>
-              <TableCell>{activity.details}</TableCell>
+              <TableCell>{activity.details || '-'}</TableCell>
             </TableRow>
           ))}
         </TableBody>
