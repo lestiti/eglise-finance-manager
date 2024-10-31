@@ -38,7 +38,8 @@ export const UserList = () => {
       setLoading(true);
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) {
         setError(error.message);
