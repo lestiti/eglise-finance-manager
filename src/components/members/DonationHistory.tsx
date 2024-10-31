@@ -16,21 +16,21 @@ export const DonationHistory = () => {
       date: "2024-02-20",
       membre: "RANDRIA Jean",
       type: "Dîme",
-      montant: "150,000 Ariary",
+      montant: "150 000 Ariary",
     },
     {
       id: 2,
       date: "2024-02-19",
       membre: "RABE Marie",
       type: "Offrande",
-      montant: "75,000 Ariary",
+      montant: "75 000 Ariary",
     },
     {
       id: 3,
       date: "2024-02-18",
       membre: "RANDRIA Jean",
       type: "Campagne",
-      montant: "500,000 Ariary",
+      montant: "500 000 Ariary",
     },
   ];
 

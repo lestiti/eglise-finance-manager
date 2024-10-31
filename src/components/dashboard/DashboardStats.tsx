@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Euro } from "lucide-react";
+import { Banknote } from "lucide-react";
 
 export const DashboardStats = () => {
   const stats = [
@@ -19,7 +19,7 @@ export const DashboardStats = () => {
               <h3 className="text-2xl font-bold mt-2">{stat.amount}</h3>
             </div>
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Euro className="h-6 w-6 text-primary" />
+              <Banknote className="h-6 w-6 text-primary" />
             </div>
           </div>
           <p className={`text-sm mt-2 ${stat.change.startsWith("+") ? "text-green-600" : "text-red-600"}`}>

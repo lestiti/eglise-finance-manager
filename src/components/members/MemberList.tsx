@@ -18,7 +18,7 @@ export const MemberList = () => {
       prenom: "Jean",
       email: "jean.randria@email.com",
       telephone: "034 00 000 00",
-      totalDons: "1,500,000 Ariary",
+      totalDons: "1 500 000 Ariary",
     },
     {
       id: 2,
@@ -26,7 +26,7 @@ export const MemberList = () => {
       prenom: "Marie",
       email: "marie.rabe@email.com",
       telephone: "033 00 000 00",
-      totalDons: "2,750,000 Ariary",
+      totalDons: "2 750 000 Ariary",
     },
   ];
 
