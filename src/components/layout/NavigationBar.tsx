@@ -74,12 +74,10 @@ export const NavigationBar = () => {
             <FolderKanban className="h-5 w-5" />
             Projets
           </Button>
-          {isAdmin && (
-            <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
-              <UserCog className="h-5 w-5" />
-              Utilisateurs
-            </Button>
-          )}
+          <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
+            <UserCog className="h-5 w-5" />
+            Utilisateurs
+          </Button>
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             Paramètres
