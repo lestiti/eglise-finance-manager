@@ -40,13 +40,13 @@ export const ActivityLog = () => {
   const getBadgeVariant = (type: string) => {
     switch (type) {
       case "create":
-        return "success";
+        return "default";
       case "update":
-        return "warning";
+        return "secondary";
       case "delete":
         return "destructive";
       default:
-        return "secondary";
+        return "outline";
     }
   };
 

@@ -64,7 +64,7 @@ export const UserList = () => {
                 <Badge variant="outline">{user.role}</Badge>
               </TableCell>
               <TableCell>
-                <Badge variant={user.statut === "Actif" ? "success" : "destructive"}>
+                <Badge variant={user.statut === "Actif" ? "default" : "destructive"}>
                   {user.statut}
                 </Badge>
               </TableCell>
