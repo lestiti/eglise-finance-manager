@@ -51,6 +51,9 @@ const LoginPage = () => {
           view="sign_in"
           showLinks={false}
         />
+        <p className="text-sm text-center text-gray-500">
+          Contactez l'administrateur système pour obtenir vos identifiants de connexion
+        </p>
       </Card>
     </div>
   );
