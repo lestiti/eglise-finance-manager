@@ -41,9 +41,9 @@ export const ProjectManagementReport = () => {
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress > 100) return "bg-red-500";
-    if (progress > 80) return "bg-yellow-500";
-    return "bg-green-500";
+    if (progress > 100) return "bg-destructive";
+    if (progress > 80) return "bg-warning";
+    return "bg-primary";
   };
 
   const chartData = projects?.map(project => ({
@@ -92,8 +92,7 @@ export const ProjectManagementReport = () => {
                   </div>
                   <Progress 
                     value={progress} 
-                    className="h-2"
-                    indicatorClassName={getProgressColor(progress)}
+                    className={`h-2 ${getProgressColor(progress)}`}
                   />
                   {progress > 90 && (
                     <Alert variant="destructive" className="mt-2">
