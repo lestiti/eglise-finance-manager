@@ -10,6 +10,21 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface BudgetTracking {
+  montant_utilise: number;
+}
+
+interface Department {
+  id: string;
+  nom: string;
+  budget_annuel: number;
+  budget_mensuel: number;
+  annee: number;
+  mois?: number;
+  created_at?: string;
+  budget_tracking?: BudgetTracking[];
+}
+
 export const BudgetOverview = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -22,11 +37,16 @@ export const BudgetOverview = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('department_budgets')
-        .select('*')
+        .select(`
+          *,
+          budget_tracking (
+            montant_utilise
+          )
+        `)
         .eq('annee', new Date().getFullYear());
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Department[];
     }
   });
 
@@ -147,10 +167,10 @@ export const BudgetOverview = () => {
         </Dialog>
       </div>
 
-      {departments.map((dept) => {
-        const budget_tracking = dept.budget_tracking || { montant_utilise: 0 };
-        const progress = (budget_tracking.montant_utilise / dept.budget_annuel) * 100;
-        const remaining = dept.budget_annuel - (budget_tracking.montant_utilise || 0);
+      {departments?.map((dept) => {
+        const montantUtilise = dept.budget_tracking?.[0]?.montant_utilise || 0;
+        const progress = (montantUtilise / dept.budget_annuel) * 100;
+        const remaining = dept.budget_annuel - montantUtilise;
         
         return (
           <Card key={dept.id} className="p-6">
@@ -164,7 +184,7 @@ export const BudgetOverview = () => {
               <div className="flex items-start gap-4">
                 <div className="text-right">
                   <p className="font-medium">
-                    Dépensé: {budget_tracking.montant_utilise?.toLocaleString() || "0"} Ariary
+                    Dépensé: {montantUtilise.toLocaleString()} Ariary
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Reste: {remaining.toLocaleString()} Ariary
