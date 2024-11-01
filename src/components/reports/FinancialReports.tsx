@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DonationReport } from "./donations/DonationReport";
 import { ExpenseReport } from "./expenses/ExpenseReport";
-import { CashFlow } from "./financial-statements/CashFlow";
+import { ProjectManagementReport } from "./financial-statements/ProjectManagementReport";
 import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { convertToJson } from "@/lib/typeUtils";
@@ -180,7 +180,7 @@ export const FinancialReports = () => {
 
       <DonationReport />
       <ExpenseReport />
-      <CashFlow data={financialData.flux_tresorerie} />
+      <ProjectManagementReport />
       <Notes data={financialData.notes} />
     </div>
   );
