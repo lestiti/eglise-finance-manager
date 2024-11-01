@@ -11,6 +11,19 @@ interface FinancialSummary {
   objectifs_futurs: string[];
 }
 
+const isFinancialSummary = (data: unknown): data is FinancialSummary => {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Partial<FinancialSummary>;
+  return (
+    typeof d.recettes_totales === 'number' &&
+    typeof d.depenses_totales === 'number' &&
+    typeof d.nombre_projets === 'number' &&
+    typeof d.nombre_beneficiaires === 'number' &&
+    Array.isArray(d.realisations_majeures) &&
+    Array.isArray(d.objectifs_futurs)
+  );
+};
+
 export const MemberSummary = () => {
   const { data: summary } = useQuery({
     queryKey: ['financial-summary'],
@@ -23,7 +36,11 @@ export const MemberSummary = () => {
         .limit(1);
       
       if (error) throw error;
-      return data?.[0]?.data as FinancialSummary;
+      const rawData = data?.[0]?.data;
+      if (!rawData || !isFinancialSummary(rawData)) {
+        return null;
+      }
+      return rawData;
     }
   });
 

@@ -21,6 +21,17 @@ interface FinancialStatement {
   };
 }
 
+const isFinancialStatement = (data: unknown): data is FinancialStatement => {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Partial<FinancialStatement>;
+  return (
+    d.actifs_courants !== undefined &&
+    d.actifs_non_courants !== undefined &&
+    d.passifs_courants !== undefined &&
+    d.passifs_non_courants !== undefined
+  );
+};
+
 export const AssetsLiabilities = () => {
   const { data: statements } = useQuery({
     queryKey: ['financial-statements-assets'],
@@ -33,7 +44,11 @@ export const AssetsLiabilities = () => {
         .limit(1);
       
       if (error) throw error;
-      return data?.[0]?.data as FinancialStatement;
+      const rawData = data?.[0]?.data;
+      if (!rawData || !isFinancialStatement(rawData)) {
+        return null;
+      }
+      return rawData;
     }
   });
 

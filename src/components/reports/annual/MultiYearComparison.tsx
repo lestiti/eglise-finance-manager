@@ -12,6 +12,21 @@ interface FinancialData {
   annee: number;
 }
 
+const isFinancialDataArray = (data: unknown[]): data is FinancialData[] => {
+  return data.every(item => {
+    if (typeof item !== 'object' || item === null) return false;
+    const d = item as Partial<FinancialData>;
+    return (
+      typeof d.annee === 'number' &&
+      typeof d.data === 'object' &&
+      d.data !== null &&
+      typeof (d.data as any).recettes_totales === 'number' &&
+      typeof (d.data as any).depenses_totales === 'number' &&
+      typeof (d.data as any).resultat_net === 'number'
+    );
+  });
+};
+
 export const MultiYearComparison = () => {
   const { data: statements } = useQuery({
     queryKey: ['financial-statements-history'],
@@ -24,7 +39,10 @@ export const MultiYearComparison = () => {
         .limit(5);
       
       if (error) throw error;
-      return data as FinancialData[];
+      if (!data || !Array.isArray(data) || !isFinancialDataArray(data)) {
+        return [];
+      }
+      return data;
     }
   });
 
