@@ -5,11 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatAmount(amount: number): string {
+export const formatAmount = (amount: number): string => {
   return new Intl.NumberFormat('mg-MG', {
     style: 'currency',
     currency: 'MGA',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
-}
+};
