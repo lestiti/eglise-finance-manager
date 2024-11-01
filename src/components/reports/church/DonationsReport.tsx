@@ -18,10 +18,19 @@ interface DonationsData {
 }
 
 interface DonationsReportProps {
-  data: DonationsData;
+  data?: DonationsData;
 }
 
 export const DonationsReport = ({ data }: DonationsReportProps) => {
+  if (!data) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-xl font-semibold mb-6">Rapport des Dons et Offrandes</h3>
+        <p className="text-gray-500">Aucune donnée disponible</p>
+      </Card>
+    );
+  }
+
   const totalDons = data.dimes + data.offrandes_dominicales + data.dons_en_ligne + data.collectes_speciales;
 
   return (

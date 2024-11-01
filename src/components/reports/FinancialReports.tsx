@@ -114,11 +114,13 @@ export const FinancialReports = () => {
   };
 
   if (isLoading) {
-    return <div>Chargement des rapports financiers...</div>;
-  }
-
-  if (!financialData) {
-    return <div>Aucune donnée financière disponible</div>;
+    return (
+      <div className="p-8">
+        <Card className="p-6">
+          <div className="text-center">Chargement des rapports financiers...</div>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -159,22 +161,22 @@ export const FinancialReports = () => {
         </TabsList>
 
         <TabsContent value="dons">
-          <DonationsReport data={financialData.dons} />
+          <DonationsReport data={financialData?.dons} />
         </TabsContent>
 
         <TabsContent value="depenses">
           <ExpensesReport 
-            depenses={financialData.depenses} 
-            departements={financialData.departements} 
+            depenses={financialData?.depenses} 
+            departements={financialData?.departements} 
           />
         </TabsContent>
 
         <TabsContent value="projets">
-          <ProjectsReport projets={financialData.projets} />
+          <ProjectsReport projets={financialData?.projets} />
         </TabsContent>
 
         <TabsContent value="social">
-          <SocialReport activites={financialData.activites_sociales} />
+          <SocialReport activites={financialData?.activites_sociales} />
         </TabsContent>
       </Tabs>
     </div>
