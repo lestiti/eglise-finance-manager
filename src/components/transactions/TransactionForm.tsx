@@ -9,17 +9,71 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export const TransactionForm = () => {
   const [date, setDate] = useState<Date>(new Date());
+  const [type, setType] = useState("");
+  const [methodePaiement, setMethodePaiement] = useState("");
+  const [montant, setMontant] = useState("");
+  const [description, setDescription] = useState("");
+  const [numeroFacture, setNumeroFacture] = useState("");
+  const [loading, setLoading] = useState(false);
+  
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour créer une transaction",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([
+        {
+          user_id: user.id,
+          type,
+          montant: parseFloat(montant),
+          methode_paiement: methodePaiement,
+          description,
+          numero_facture: numeroFacture,
+          date_transaction: date.toISOString(),
+        }
+      ]);
+
+    setLoading(false);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement de la transaction",
+        variant: "destructive",
+      });
+      console.error('Erreur:', error);
+      return;
+    }
+
     toast({
-      title: "Transaction enregistrée",
+      title: "Succès",
       description: "La transaction a été enregistrée avec succès",
     });
+
+    // Reset form
+    setType("");
+    setMethodePaiement("");
+    setMontant("");
+    setDescription("");
+    setNumeroFacture("");
+    setDate(new Date());
   };
 
   return (
@@ -29,7 +83,7 @@ export const TransactionForm = () => {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Type de Transaction</label>
-            <Select>
+            <Select value={type} onValueChange={setType}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner le type" />
               </SelectTrigger>
@@ -43,7 +97,7 @@ export const TransactionForm = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Méthode de Paiement</label>
-            <Select>
+            <Select value={methodePaiement} onValueChange={setMethodePaiement}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner la méthode" />
               </SelectTrigger>
@@ -57,7 +111,12 @@ export const TransactionForm = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Montant (Ar)</label>
-            <Input type="number" placeholder="0 Ariary" />
+            <Input 
+              type="number" 
+              placeholder="0 Ariary" 
+              value={montant}
+              onChange={(e) => setMontant(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
@@ -82,13 +141,37 @@ export const TransactionForm = () => {
         </div>
 
         <div className="space-y-2">
+          <label className="text-sm font-medium">N° Facture (optionnel)</label>
+          <Input 
+            placeholder="Numéro de facture" 
+            value={numeroFacture}
+            onChange={(e) => setNumeroFacture(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
           <label className="text-sm font-medium">Description</label>
-          <Input placeholder="Description de la transaction" />
+          <Input 
+            placeholder="Description de la transaction" 
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </div>
 
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" type="button">Annuler</Button>
-          <Button type="submit">Enregistrer</Button>
+          <Button variant="outline" type="button" onClick={() => {
+            setType("");
+            setMethodePaiement("");
+            setMontant("");
+            setDescription("");
+            setNumeroFacture("");
+            setDate(new Date());
+          }}>
+            Annuler
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Enregistrement..." : "Enregistrer"}
+          </Button>
         </div>
       </form>
     </Card>

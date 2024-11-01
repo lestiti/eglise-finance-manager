@@ -109,6 +109,53 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          created_at: string | null
+          date_transaction: string | null
+          description: string | null
+          id: string
+          methode_paiement: string
+          montant: number
+          numero_facture: string | null
+          statut: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_transaction?: string | null
+          description?: string | null
+          id?: string
+          methode_paiement: string
+          montant: number
+          numero_facture?: string | null
+          statut?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_transaction?: string | null
+          description?: string | null
+          id?: string
+          methode_paiement?: string
+          montant?: number
+          numero_facture?: string | null
+          statut?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
