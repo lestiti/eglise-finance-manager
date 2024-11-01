@@ -14,13 +14,40 @@ import { useNavigate } from "react-router-dom";
 export const DashboardStats = () => {
   const navigate = useNavigate();
 
-  const { data: donationsData } = useQuery({
-    queryKey: ['dashboard-donations'],
+  const { data: currentMonthDonations } = useQuery({
+    queryKey: ['current-month-donations'],
     queryFn: async () => {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
       const { data, error } = await supabase
         .from('donations')
         .select('montant')
-        .gte('date_don', new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString());
+        .gte('date_don', startOfMonth.toISOString());
+      
+      if (error) throw error;
+      return data?.reduce((sum, don) => sum + Number(don.montant), 0) || 0;
+    }
+  });
+
+  const { data: lastMonthDonations } = useQuery({
+    queryKey: ['last-month-donations'],
+    queryFn: async () => {
+      const startOfLastMonth = new Date();
+      startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
+      startOfLastMonth.setDate(1);
+      startOfLastMonth.setHours(0, 0, 0, 0);
+      
+      const endOfLastMonth = new Date();
+      endOfLastMonth.setDate(0);
+      endOfLastMonth.setHours(23, 59, 59, 999);
+      
+      const { data, error } = await supabase
+        .from('donations')
+        .select('montant')
+        .gte('date_don', startOfLastMonth.toISOString())
+        .lte('date_don', endOfLastMonth.toISOString());
       
       if (error) throw error;
       return data?.reduce((sum, don) => sum + Number(don.montant), 0) || 0;
@@ -30,33 +57,73 @@ export const DashboardStats = () => {
   const { data: membersCount } = useQuery({
     queryKey: ['dashboard-members'],
     queryFn: async () => {
-      const { count, error } = await supabase
+      const { count: currentCount } = await supabase
         .from('members')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('statut', 'actif');
       
-      if (error) throw error;
-      return count || 0;
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      
+      const { count: lastMonthCount } = await supabase
+        .from('members')
+        .select('*', { count: 'exact', head: true })
+        .eq('statut', 'actif')
+        .lte('created_at', lastMonth.toISOString());
+      
+      return {
+        current: currentCount || 0,
+        variation: currentCount && lastMonthCount ? 
+          ((currentCount - lastMonthCount) / lastMonthCount) * 100 : 0
+      };
     }
   });
 
-  const { data: projectsCount } = useQuery({
+  const { data: projectsData } = useQuery({
     queryKey: ['dashboard-projects'],
     queryFn: async () => {
-      const { count, error } = await supabase
+      const { data: currentProjects, error } = await supabase
         .from('projects')
-        .select('*', { count: 'exact', head: true })
+        .select('*')
         .eq('statut', 'en_cours');
       
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      
+      const { data: lastMonthProjects } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('statut', 'en_cours')
+        .lte('created_at', lastMonth.toISOString());
+      
       if (error) throw error;
-      return count || 0;
+      
+      const currentCount = currentProjects?.length || 0;
+      const lastMonthCount = lastMonthProjects?.length || 0;
+      
+      return {
+        count: currentCount,
+        variation: lastMonthCount ? 
+          ((currentCount - lastMonthCount) / lastMonthCount) * 100 : 0
+      };
     }
   });
+
+  const calculateDonationVariation = () => {
+    if (!lastMonthDonations || lastMonthDonations === 0) return 0;
+    return ((currentMonthDonations || 0) - lastMonthDonations) / lastMonthDonations * 100;
+  };
+
+  const formatVariation = (variation: number) => {
+    const prefix = variation > 0 ? '+' : '';
+    return `${prefix}${variation.toFixed(1)}%`;
+  };
 
   const stats = [
     { 
       title: "Total des dons", 
-      amount: `${(donationsData || 0).toLocaleString()} Ar`, 
-      change: "+12%",
+      amount: `${(currentMonthDonations || 0).toLocaleString()} Ar`, 
+      change: formatVariation(calculateDonationVariation()),
       icon: Banknote,
       color: "text-green-600",
       bgColor: "bg-green-100",
@@ -64,8 +131,8 @@ export const DashboardStats = () => {
     },
     { 
       title: "Membres actifs", 
-      amount: membersCount?.toString() || "0", 
-      change: "+5%",
+      amount: membersCount?.current.toString() || "0", 
+      change: formatVariation(membersCount?.variation || 0),
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
@@ -73,8 +140,8 @@ export const DashboardStats = () => {
     },
     { 
       title: "Projets en cours", 
-      amount: projectsCount?.toString() || "0", 
-      change: "0%",
+      amount: projectsData?.count.toString() || "0", 
+      change: formatVariation(projectsData?.variation || 0),
       icon: FolderKanban,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
