@@ -2,15 +2,18 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { formatAmount } from "@/lib/utils";
 
-interface DepartmentExpense {
+interface DepartmentBudget {
+  id: string;
   nom: string;
   budget_annuel: number;
   budget_mensuel: number;
-  depenses_actuelles: number;
+  annee: number;
+  mois?: number;
+  created_at?: string;
 }
 
 interface ExpensesReportProps {
-  departments?: DepartmentExpense[];
+  departments?: DepartmentBudget[];
 }
 
 export const ExpensesReport = ({ departments }: ExpensesReportProps) => {
@@ -32,7 +35,7 @@ export const ExpensesReport = ({ departments }: ExpensesReportProps) => {
           <h4 className="font-medium mb-4">Dépenses par Département</h4>
           <div className="space-y-6">
             {departments.map((dept) => (
-              <div key={dept.nom} className="space-y-2">
+              <div key={dept.id} className="space-y-2">
                 <div className="flex justify-between items-baseline">
                   <span className="font-medium">{dept.nom}</span>
                   <div className="text-sm text-gray-500">
@@ -42,16 +45,17 @@ export const ExpensesReport = ({ departments }: ExpensesReportProps) => {
                 
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span>Dépenses actuelles</span>
-                    <span>{formatAmount(dept.depenses_actuelles)}</span>
+                    <span>Budget mensuel</span>
+                    <span>{formatAmount(dept.budget_mensuel)}</span>
                   </div>
                   <Progress 
-                    value={(dept.depenses_actuelles / dept.budget_annuel) * 100} 
+                    // Since we don't have actual expenses, we'll show budget utilization based on month
+                    value={((dept.mois || 1) / 12) * 100} 
                     className="h-2"
                   />
                   <div className="flex justify-between text-sm text-gray-500">
-                    <span>Budget mensuel</span>
-                    <span>{formatAmount(dept.budget_mensuel)}</span>
+                    <span>Période</span>
+                    <span>{dept.mois ? `Mois ${dept.mois}` : 'Année complète'} - {dept.annee}</span>
                   </div>
                 </div>
               </div>
