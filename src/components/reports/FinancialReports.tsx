@@ -12,6 +12,7 @@ import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { FinancialData, isFinancialData } from "@/types/financial";
+import { Json } from "@/integrations/supabase/types";
 
 export const FinancialReports = () => {
   const { toast } = useToast();
