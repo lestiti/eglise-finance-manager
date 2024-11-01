@@ -12,6 +12,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { formatAmount } from "@/lib/utils";
 import { FinancialData } from "@/types/financial";
 import { Json } from "@/integrations/supabase/types";
+import { convertToJson } from "@/lib/typeUtils";
 
 const defaultFinancialData: FinancialData = {
   bilan: {
@@ -127,7 +128,6 @@ export const FinancialReports = () => {
       const rawData = data?.[0]?.data as unknown;
       if (!rawData) return defaultFinancialData;
       
-      // Type guard function to check if the data matches FinancialData structure
       const isFinancialData = (data: unknown): data is FinancialData => {
         if (typeof data !== 'object' || data === null) return false;
         
@@ -155,7 +155,7 @@ export const FinancialReports = () => {
             periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
-            data: financialData as Json
+            data: convertToJson(financialData)
           }
         ]);
 
@@ -198,7 +198,7 @@ export const FinancialReports = () => {
             periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
-            data: financialData as Json
+            data: convertToJson(financialData)
           }
         ]);
 
