@@ -22,11 +22,12 @@ export const ProjectList = ({ onSelectProject }: ProjectListProps) => {
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
+      // Mise à jour de la requête pour utiliser la relation correcte
       const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
-          donation_pledges (
+          donation_pledges!project_id (
             montant,
             statut
           )
@@ -62,7 +63,7 @@ export const ProjectList = ({ onSelectProject }: ProjectListProps) => {
             {projects?.map((project) => {
               const depenseRatio = (project.depenses_actuelles / project.budget_total) * 100;
               const promessesDons = project.donation_pledges?.reduce((acc, pledge) => 
-                pledge.statut === 'confirmé' ? acc + pledge.montant : acc, 0) || 0;
+                pledge.statut === 'encaisse' ? acc + pledge.montant : acc, 0) || 0;
               const promessesRatio = (promessesDons / project.budget_total) * 100;
               
               return (
@@ -99,7 +100,7 @@ export const ProjectList = ({ onSelectProject }: ProjectListProps) => {
                   <TableCell>
                     <div className="space-y-2">
                       <Progress 
-                        value={project.statut === 'terminé' ? 100 : 
+                        value={project.statut === 'termine' ? 100 : 
                                project.statut === 'en_cours' ? 50 : 25} 
                         className="h-2" 
                       />
@@ -110,7 +111,7 @@ export const ProjectList = ({ onSelectProject }: ProjectListProps) => {
                   </TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${
-                      project.statut === 'terminé' ? 'bg-green-100 text-green-800' :
+                      project.statut === 'termine' ? 'bg-green-100 text-green-800' :
                       project.statut === 'en_cours' ? 'bg-blue-100 text-blue-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>

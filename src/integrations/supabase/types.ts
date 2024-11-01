@@ -261,6 +261,7 @@ export type Database = {
           member_id: string | null
           montant: number
           notes: string | null
+          project_id: string | null
           projet: string
           statut: string | null
           updated_at: string | null
@@ -273,6 +274,7 @@ export type Database = {
           member_id?: string | null
           montant: number
           notes?: string | null
+          project_id?: string | null
           projet: string
           statut?: string | null
           updated_at?: string | null
@@ -285,6 +287,7 @@ export type Database = {
           member_id?: string | null
           montant?: number
           notes?: string | null
+          project_id?: string | null
           projet?: string
           statut?: string | null
           updated_at?: string | null
@@ -295,6 +298,13 @@ export type Database = {
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donation_pledges_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
