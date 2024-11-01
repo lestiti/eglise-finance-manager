@@ -139,7 +139,7 @@ export const FinancialReports = () => {
     try {
       const exportData = {
         user_id: user?.id,
-        type: 'export',
+        type: 'bilan', // Changed from 'export' to 'bilan'
         periode: 'mensuel',
         annee: new Date().getFullYear(),
         mois: new Date().getMonth() + 1,
@@ -184,7 +184,7 @@ export const FinancialReports = () => {
     try {
       const printData = {
         user_id: user?.id,
-        type: 'print',
+        type: 'bilan', // Changed from 'print' to 'bilan'
         periode: 'mensuel',
         annee: new Date().getFullYear(),
         mois: new Date().getMonth() + 1,
