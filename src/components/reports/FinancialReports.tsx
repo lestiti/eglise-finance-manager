@@ -10,6 +10,7 @@ import { ExpensesReport } from "./church/ExpensesReport";
 import { ProjectsReport } from "./church/ProjectsReport";
 import { SocialReport } from "./church/SocialReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Json } from "@/integrations/supabase/types";
 
 interface ChurchFinancialData {
   dons: {
@@ -67,22 +68,34 @@ export const FinancialReports = () => {
         .limit(1);
 
       if (error) throw error;
-      return data?.[0]?.data as ChurchFinancialData;
+      
+      // Safely type cast the JSON data
+      const rawData = data?.[0]?.data as Json;
+      if (!rawData || typeof rawData !== 'object') {
+        return null;
+      }
+
+      // Type assertion after validation
+      return rawData as unknown as ChurchFinancialData;
     }
   });
 
   const handleExport = async (format: string) => {
     try {
+      if (!financialData || !user?.id) return;
+
+      const exportData = {
+        user_id: user.id,
+        type: 'bilan',
+        periode: 'mensuel',
+        annee: new Date().getFullYear(),
+        mois: new Date().getMonth() + 1,
+        data: financialData as unknown as Json
+      };
+
       const { error } = await supabase
         .from('financial_statements')
-        .insert([{
-          user_id: user?.id,
-          type: 'bilan',
-          periode: 'mensuel',
-          annee: new Date().getFullYear(),
-          mois: new Date().getMonth() + 1,
-          data: financialData
-        }]);
+        .insert([exportData]);
 
       if (error) throw error;
 
