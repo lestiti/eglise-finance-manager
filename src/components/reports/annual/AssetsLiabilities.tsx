@@ -3,6 +3,24 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 
+interface FinancialStatement {
+  actifs_courants: {
+    total: number;
+    liquidites: number;
+  };
+  actifs_non_courants: {
+    batiments: number;
+    equipements: number;
+  };
+  passifs_courants: {
+    total: number;
+    dettes_court_terme: number;
+  };
+  passifs_non_courants: {
+    engagements: number;
+  };
+}
+
 export const AssetsLiabilities = () => {
   const { data: statements } = useQuery({
     queryKey: ['financial-statements-assets'],
@@ -15,7 +33,7 @@ export const AssetsLiabilities = () => {
         .limit(1);
       
       if (error) throw error;
-      return data?.[0]?.data;
+      return data?.[0]?.data as FinancialStatement;
     }
   });
 

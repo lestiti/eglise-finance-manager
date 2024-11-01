@@ -194,36 +194,54 @@ export type Database = {
       }
       financial_statements: {
         Row: {
+          actifs_courants: Json | null
+          actifs_non_courants: Json | null
           annee: number
           created_at: string | null
           data: Json
           id: string
           mois: number | null
+          objectifs_futurs: string[] | null
+          passifs_courants: Json | null
+          passifs_non_courants: Json | null
           periode: string
+          realisations_majeures: string[] | null
           trimestre: number | null
           type: string
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          actifs_courants?: Json | null
+          actifs_non_courants?: Json | null
           annee: number
           created_at?: string | null
           data: Json
           id?: string
           mois?: number | null
+          objectifs_futurs?: string[] | null
+          passifs_courants?: Json | null
+          passifs_non_courants?: Json | null
           periode: string
+          realisations_majeures?: string[] | null
           trimestre?: number | null
           type: string
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          actifs_courants?: Json | null
+          actifs_non_courants?: Json | null
           annee?: number
           created_at?: string | null
           data?: Json
           id?: string
           mois?: number | null
+          objectifs_futurs?: string[] | null
+          passifs_courants?: Json | null
+          passifs_non_courants?: Json | null
           periode?: string
+          realisations_majeures?: string[] | null
           trimestre?: number | null
           type?: string
           updated_at?: string | null

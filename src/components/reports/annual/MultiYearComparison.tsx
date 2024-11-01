@@ -3,6 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
+interface FinancialData {
+  data: {
+    recettes_totales: number;
+    depenses_totales: number;
+    resultat_net: number;
+  };
+  annee: number;
+}
+
 export const MultiYearComparison = () => {
   const { data: statements } = useQuery({
     queryKey: ['financial-statements-history'],
@@ -15,7 +24,7 @@ export const MultiYearComparison = () => {
         .limit(5);
       
       if (error) throw error;
-      return data;
+      return data as FinancialData[];
     }
   });
 

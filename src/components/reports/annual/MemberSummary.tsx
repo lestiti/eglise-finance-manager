@@ -2,6 +2,15 @@ import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface FinancialSummary {
+  recettes_totales: number;
+  depenses_totales: number;
+  nombre_projets: number;
+  nombre_beneficiaires: number;
+  realisations_majeures: string[];
+  objectifs_futurs: string[];
+}
+
 export const MemberSummary = () => {
   const { data: summary } = useQuery({
     queryKey: ['financial-summary'],
@@ -14,7 +23,7 @@ export const MemberSummary = () => {
         .limit(1);
       
       if (error) throw error;
-      return data?.[0]?.data;
+      return data?.[0]?.data as FinancialSummary;
     }
   });
 
