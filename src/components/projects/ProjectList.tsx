@@ -10,30 +10,32 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ProjectList = () => {
-  const projects = [
-    {
-      id: 1,
-      nom: "Construction Centre Communautaire",
-      objectif: "Construction",
-      responsable: "RAKOTO Jean",
-      budget: "1 000 000 000",
-      depense: "400 000 000",
-      progression: 30,
-      collecte: "600 000 000",
-    },
-    {
-      id: 2,
-      nom: "Rénovation Toiture",
-      objectif: "Rénovation",
-      responsable: "RABE Pierre",
-      budget: "500 000 000",
-      depense: "450 000 000",
-      progression: 90,
-      collecte: "480 000 000",
-    },
-  ];
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          donation_pledges (
+            montant,
+            statut
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  if (isLoading) {
+    return <div>Chargement des projets...</div>;
+  }
 
   return (
     <Card className="p-6">
@@ -42,29 +44,30 @@ export const ProjectList = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Projet</TableHead>
-              <TableHead>Objectif</TableHead>
-              <TableHead>Responsable</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead>Budget</TableHead>
               <TableHead>Dépenses</TableHead>
-              <TableHead>Collecté</TableHead>
+              <TableHead>Promesses de dons</TableHead>
               <TableHead>Progression</TableHead>
+              <TableHead>Statut</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {projects.map((project) => {
-              const depenseRatio = (parseInt(project.depense.replace(/,/g, "")) / parseInt(project.budget.replace(/,/g, ""))) * 100;
-              const collecteRatio = (parseInt(project.collecte.replace(/,/g, "")) / parseInt(project.budget.replace(/,/g, ""))) * 100;
+            {projects?.map((project) => {
+              const depenseRatio = (project.depenses_actuelles / project.budget_total) * 100;
+              const promessesDons = project.donation_pledges?.reduce((acc, pledge) => 
+                pledge.statut === 'confirmé' ? acc + pledge.montant : acc, 0) || 0;
+              const promessesRatio = (promessesDons / project.budget_total) * 100;
               
               return (
                 <TableRow key={project.id}>
                   <TableCell className="font-medium">{project.nom}</TableCell>
-                  <TableCell>{project.objectif}</TableCell>
-                  <TableCell>{project.responsable}</TableCell>
-                  <TableCell>{project.budget} Ar</TableCell>
+                  <TableCell>{project.description}</TableCell>
+                  <TableCell>{project.budget_total.toLocaleString()} Ar</TableCell>
                   <TableCell>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>{project.depense} Ar</span>
+                        <span>{project.depenses_actuelles.toLocaleString()} Ar</span>
                         <span>{depenseRatio.toFixed(0)}%</span>
                       </div>
                       <Progress value={depenseRatio} className="h-2" />
@@ -81,20 +84,32 @@ export const ProjectList = () => {
                   <TableCell>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>{project.collecte} Ar</span>
-                        <span>{collecteRatio.toFixed(0)}%</span>
+                        <span>{promessesDons.toLocaleString()} Ar</span>
+                        <span>{promessesRatio.toFixed(0)}%</span>
                       </div>
-                      <Progress value={collecteRatio} className="h-2" />
+                      <Progress value={promessesRatio} className="h-2" />
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Avancement</span>
-                        <span>{project.progression}%</span>
-                      </div>
-                      <Progress value={project.progression} className="h-2" />
+                      <Progress 
+                        value={project.statut === 'terminé' ? 100 : 
+                               project.statut === 'en_cours' ? 50 : 25} 
+                        className="h-2" 
+                      />
+                      <span className="text-sm capitalize">
+                        {project.statut?.replace('_', ' ')}
+                      </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      project.statut === 'terminé' ? 'bg-green-100 text-green-800' :
+                      project.statut === 'en_cours' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {project.statut}
+                    </span>
                   </TableCell>
                 </TableRow>
               );
