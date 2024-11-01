@@ -9,6 +9,7 @@ import { ProjectManagementReport } from "./financial-statements/ProjectManagemen
 import { TreasuryReport } from "./financial-statements/TreasuryReport";
 import { SocialAidReport } from "./social-aid/SocialAidReport";
 import { AnnualReport } from "./annual/AnnualReport";
+import { BudgetReport } from "./budgets/BudgetReport";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { convertToJson } from "@/lib/typeUtils";
 import { FinancialData } from "@/types/financial";
