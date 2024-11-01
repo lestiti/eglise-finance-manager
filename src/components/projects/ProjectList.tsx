@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -6,14 +7,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
-export const ProjectList = () => {
+interface ProjectListProps {
+  onSelectProject: (projectId: string) => void;
+}
+
+export const ProjectList = ({ onSelectProject }: ProjectListProps) => {
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -50,6 +55,7 @@ export const ProjectList = () => {
               <TableHead>Promesses de dons</TableHead>
               <TableHead>Progression</TableHead>
               <TableHead>Statut</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -72,7 +78,7 @@ export const ProjectList = () => {
                       </div>
                       <Progress value={depenseRatio} className="h-2" />
                       {depenseRatio > 90 && (
-                        <Alert variant="destructive" className="py-2">
+                        <Alert variant="destructive">
                           <AlertCircle className="h-4 w-4" />
                           <AlertDescription>
                             Attention: Budget presque épuisé
@@ -110,6 +116,15 @@ export const ProjectList = () => {
                     }`}>
                       {project.statut}
                     </span>
+                  </TableCell>
+                  <TableCell>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onSelectProject(project.id)}
+                    >
+                      Voir détails
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
