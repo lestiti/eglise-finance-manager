@@ -11,6 +11,7 @@ import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { formatAmount } from "@/lib/utils";
 import { FinancialData } from "@/types/financial";
+import { Json } from "@/integrations/supabase/types";
 
 const defaultFinancialData: FinancialData = {
   bilan: {
@@ -123,26 +124,23 @@ export const FinancialReports = () => {
 
       if (error) throw error;
       
-      // Safely type cast the data
-      const rawData = data?.[0]?.data;
+      const rawData = data?.[0]?.data as unknown;
       if (!rawData) return defaultFinancialData;
       
-      try {
-        // Validate that the data matches our expected structure
-        const typedData = rawData as FinancialData;
-        if (
-          typeof typedData === 'object' &&
-          'bilan' in typedData &&
-          'compte_resultat' in typedData &&
-          'flux_tresorerie' in typedData &&
-          'notes' in typedData
-        ) {
-          return typedData;
-        }
-        return defaultFinancialData;
-      } catch {
-        return defaultFinancialData;
-      }
+      // Type guard function to check if the data matches FinancialData structure
+      const isFinancialData = (data: unknown): data is FinancialData => {
+        if (typeof data !== 'object' || data === null) return false;
+        
+        const d = data as Partial<FinancialData>;
+        return (
+          'bilan' in d &&
+          'compte_resultat' in d &&
+          'flux_tresorerie' in d &&
+          'notes' in d
+        );
+      };
+
+      return isFinancialData(rawData) ? rawData : defaultFinancialData;
     }
   });
 
@@ -157,7 +155,7 @@ export const FinancialReports = () => {
             periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
-            data: JSON.parse(JSON.stringify(financialData)) // Convert to plain object
+            data: financialData as Json
           }
         ]);
 
@@ -200,7 +198,7 @@ export const FinancialReports = () => {
             periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
-            data: JSON.parse(JSON.stringify(financialData)) // Convert to plain object
+            data: financialData as Json
           }
         ]);
 
