@@ -42,8 +42,11 @@ export const NavigationBar = () => {
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    const key = event?.key?.toLowerCase();
-    if (!key) return;
+    // Vérifier que event.key existe avant d'appeler toLowerCase()
+    if (event && event.key) {
+      const key = event.key.toLowerCase();
+      // Ajouter ici la logique de raccourcis clavier si nécessaire
+    }
   };
 
   useEffect(() => {
