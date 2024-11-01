@@ -1,48 +1,4 @@
 export interface FinancialData {
-  bilan: {
-    actifs_courants: {
-      liquidites: number;
-      comptes_clients: number;
-      stocks: number;
-    };
-    actifs_non_courants: {
-      immobilisations: number;
-      investissements_long_terme: number;
-    };
-    passifs_courants: {
-      dettes_court_terme: number;
-      comptes_fournisseurs: number;
-    };
-    passifs_non_courants: {
-      emprunts_long_terme: number;
-      obligations: number;
-    };
-    capitaux_propres: {
-      capital_social: number;
-      reserves: number;
-      resultat_net: number;
-    };
-  };
-  compte_resultat: {
-    chiffre_affaires: {
-      total: number;
-      par_segment: Record<string, number>;
-    };
-    cout_ventes: {
-      total: number;
-      details: Record<string, number>;
-    };
-    charges_exploitation: {
-      charges_administratives: number;
-      charges_vente: number;
-      autres_charges: number;
-    };
-    resultat_financier: {
-      produits_financiers: number;
-      charges_financieres: number;
-    };
-    impots: number;
-  };
   flux_tresorerie: {
     activites_operationnelles: {
       encaissements_clients: number;

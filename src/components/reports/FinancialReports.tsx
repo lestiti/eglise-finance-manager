@@ -9,12 +9,44 @@ import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { convertToJson } from "@/lib/typeUtils";
+import { FinancialData } from "@/types/financial";
+
+const defaultFinancialData: FinancialData = {
+  flux_tresorerie: {
+    activites_operationnelles: {
+      encaissements_clients: 0,
+      decaissements_fournisseurs: 0,
+      decaissements_salaires: 0,
+      autres_flux_operationnels: 0,
+    },
+    activites_investissement: {
+      acquisitions_immobilisations: 0,
+      cessions_immobilisations: 0,
+      investissements_financiers: 0,
+    },
+    activites_financement: {
+      emprunts_nouveaux: 0,
+      remboursements_emprunts: 0,
+      variations_capital: 0,
+    },
+    tresorerie: {
+      debut_periode: 0,
+      fin_periode: 0,
+    },
+  },
+  notes: {
+    methodes_comptables: [],
+    engagements_hors_bilan: [],
+    evenements_post_cloture: [],
+    risques_incertitudes: [],
+  },
+};
 
 export const FinancialReports = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const { data: financialData, isLoading } = useQuery({
+  const { data: financialData = defaultFinancialData, isLoading } = useQuery({
     queryKey: ['financial-statements'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,7 +56,20 @@ export const FinancialReports = () => {
         .limit(1);
 
       if (error) throw error;
-      return data?.[0]?.data || {};
+      
+      const rawData = data?.[0]?.data;
+      if (!rawData || typeof rawData !== 'object') return defaultFinancialData;
+      
+      const isFinancialData = (data: unknown): data is FinancialData => {
+        if (typeof data !== 'object' || data === null) return false;
+        const d = data as Partial<FinancialData>;
+        return (
+          'flux_tresorerie' in d &&
+          'notes' in d
+        );
+      };
+
+      return isFinancialData(rawData) ? rawData : defaultFinancialData;
     }
   });
 
