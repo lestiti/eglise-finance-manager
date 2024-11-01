@@ -11,6 +11,7 @@ import { IncomeStatement } from "./financial-statements/IncomeStatement";
 import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { FinancialData } from "@/types/financial";
 
 export const FinancialReports = () => {
   const { toast } = useToast();
@@ -28,11 +29,11 @@ export const FinancialReports = () => {
         .limit(1);
 
       if (error) throw error;
-      return data?.[0]?.data || defaultFinancialData;
+      return (data?.[0]?.data as FinancialData) || defaultFinancialData;
     }
   });
 
-  const defaultFinancialData = {
+  const defaultFinancialData: FinancialData = {
     bilan: {
       actifs_courants: {
         liquidites: 150000000,
@@ -181,7 +182,7 @@ export const FinancialReports = () => {
           {
             user_id: user?.id,
             type: 'print',
-            periode: 'mensuel',
+           periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
             data: financialData
