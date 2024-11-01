@@ -195,6 +195,53 @@ export type Database = {
         }
         Relationships: []
       }
+      donation_pledges: {
+        Row: {
+          created_at: string | null
+          date_echeance: string
+          date_promesse: string | null
+          id: string
+          member_id: string | null
+          montant: number
+          notes: string | null
+          projet: string
+          statut: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_echeance: string
+          date_promesse?: string | null
+          id?: string
+          member_id?: string | null
+          montant: number
+          notes?: string | null
+          projet: string
+          statut?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_echeance?: string
+          date_promesse?: string | null
+          id?: string
+          member_id?: string | null
+          montant?: number
+          notes?: string | null
+          projet?: string
+          statut?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_pledges_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           activite: string | null
