@@ -14,35 +14,16 @@ import {
   LogOut,
   Shield
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const isAdmin = user?.user_metadata?.role === 'admin';
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la déconnexion",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Déconnexion réussie",
-        description: "Vous avez été déconnecté avec succès",
-      });
-      navigate("/auth/login");
-    }
-  };
-
   const handleKeyDown = (event: KeyboardEvent) => {
-    // Vérifier que event.key existe avant d'appeler toLowerCase()
     if (event && event.key) {
       const key = event.key.toLowerCase();
       // Ajouter ici la logique de raccourcis clavier si nécessaire
@@ -91,19 +72,23 @@ export const NavigationBar = () => {
             <FolderKanban className="h-5 w-5" />
             Projets
           </Button>
-          <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
-            <UserCog className="h-5 w-5" />
-            Utilisateurs
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/securite")} className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Sécurité
-          </Button>
+          {isAdmin && (
+            <>
+              <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
+                <UserCog className="h-5 w-5" />
+                Utilisateurs
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/securite")} className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Sécurité
+              </Button>
+            </>
+          )}
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             Paramètres
           </Button>
-          <Button variant="destructive" onClick={handleLogout} className="flex items-center gap-2">
+          <Button variant="destructive" onClick={signOut} className="flex items-center gap-2">
             <LogOut className="h-5 w-5" />
             Déconnexion
           </Button>
