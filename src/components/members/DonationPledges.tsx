@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, Plus } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { Bell, Plus, CheckCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -20,6 +20,7 @@ import { PledgeForm } from "./PledgeForm";
 export const DonationPledges = () => {
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
+  const queryClient = useQueryClient();
   
   const { data: pledges, isLoading } = useQuery({
     queryKey: ['pledges'],
@@ -38,11 +39,33 @@ export const DonationPledges = () => {
   });
 
   const handleReminder = async (memberId: string) => {
-    // Ici vous pourriez implémenter l'envoi réel du rappel
     toast({
       title: "Rappel envoyé",
       description: "Un rappel a été envoyé au membre",
     });
+  };
+
+  const handleValidatePayment = async (pledgeId: string) => {
+    const { error } = await supabase
+      .from('donation_pledges')
+      .update({ statut: 'encaisse' })
+      .eq('id', pledgeId);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la validation de l'encaissement",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Succès",
+      description: "La promesse de don a été marquée comme encaissée",
+    });
+
+    queryClient.invalidateQueries({ queryKey: ['pledges'] });
   };
 
   if (isLoading) {
@@ -77,7 +100,7 @@ export const DonationPledges = () => {
                 <TableHead>Montant promis</TableHead>
                 <TableHead>Échéance</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead>Action</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -97,21 +120,38 @@ export const DonationPledges = () => {
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-sm ${
                       pledge.statut === 'en_attente' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-green-100 text-green-800'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : pledge.statut === 'encaisse'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
                     }`}>
                       {pledge.statut}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleReminder(pledge.member_id)}
-                    >
-                      <Bell className="h-4 w-4 mr-1" />
-                      Rappel
-                    </Button>
+                    <div className="flex space-x-2">
+                      {pledge.statut === 'en_attente' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleReminder(pledge.member_id)}
+                          >
+                            <Bell className="h-4 w-4 mr-1" />
+                            Rappel
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-green-600 hover:text-green-700"
+                            onClick={() => handleValidatePayment(pledge.id)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Valider
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
