@@ -4,7 +4,7 @@ import { FileText, Download, Printer } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BalanceSheet } from "./financial-statements/BalanceSheet";
+import { DonationReport } from "./donations/DonationReport";
 import { IncomeStatement } from "./financial-statements/IncomeStatement";
 import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
@@ -253,7 +253,7 @@ export const FinancialReports = () => {
         </Button>
       </div>
 
-      <BalanceSheet data={financialData.bilan} />
+      <DonationReport />
       <IncomeStatement data={financialData.compte_resultat} />
       <CashFlow data={financialData.flux_tresorerie} />
       <Notes data={financialData.notes} />
