@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatAmount = (amount: number): string => {
+export const formatAmount = (amount: number) => {
   return new Intl.NumberFormat('mg-MG', {
     style: 'currency',
     currency: 'MGA',
