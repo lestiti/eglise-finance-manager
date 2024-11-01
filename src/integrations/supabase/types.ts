@@ -301,6 +301,59 @@ export type Database = {
           },
         ]
       }
+      members: {
+        Row: {
+          adresse: string | null
+          created_at: string | null
+          date_adhesion: string | null
+          email: string
+          id: string
+          nom: string
+          prenom: string
+          statut: string | null
+          telephone: string | null
+          total_dons: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          created_at?: string | null
+          date_adhesion?: string | null
+          email: string
+          id?: string
+          nom: string
+          prenom: string
+          statut?: string | null
+          telephone?: string | null
+          total_dons?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          created_at?: string | null
+          date_adhesion?: string | null
+          email?: string
+          id?: string
+          nom?: string
+          prenom?: string
+          statut?: string | null
+          telephone?: string | null
+          total_dons?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

@@ -6,6 +6,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -17,6 +19,8 @@ const formSchema = z.object({
 
 export const MemberForm = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -28,11 +32,33 @@ export const MemberForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const { data, error } = await supabase
+      .from('members')
+      .insert([{
+        nom: values.nom,
+        prenom: values.prenom,
+        email: values.email,
+        telephone: values.telephone,
+        adresse: values.adresse,
+      }]);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'ajout du membre",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Membre ajouté",
       description: "Le nouveau membre a été ajouté avec succès",
     });
+    
+    // Invalider le cache pour forcer un rafraîchissement
+    queryClient.invalidateQueries({ queryKey: ['members'] });
     form.reset();
   };
 
