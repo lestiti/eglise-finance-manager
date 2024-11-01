@@ -3,14 +3,26 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
+interface FinancialMetrics {
+  recettes_totales: number;
+  depenses_totales: number;
+  resultat_net: number;
+}
+
 interface FinancialData {
-  data: {
-    recettes_totales: number;
-    depenses_totales: number;
-    resultat_net: number;
-  };
+  data: FinancialMetrics;
   annee: number;
 }
+
+const isFinancialMetrics = (data: unknown): data is FinancialMetrics => {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Partial<FinancialMetrics>;
+  return (
+    typeof d.recettes_totales === 'number' &&
+    typeof d.depenses_totales === 'number' &&
+    typeof d.resultat_net === 'number'
+  );
+};
 
 const isFinancialDataArray = (data: unknown[]): data is FinancialData[] => {
   return data.every(item => {
@@ -20,9 +32,7 @@ const isFinancialDataArray = (data: unknown[]): data is FinancialData[] => {
       typeof d.annee === 'number' &&
       typeof d.data === 'object' &&
       d.data !== null &&
-      typeof (d.data as any).recettes_totales === 'number' &&
-      typeof (d.data as any).depenses_totales === 'number' &&
-      typeof (d.data as any).resultat_net === 'number'
+      isFinancialMetrics(d.data)
     );
   });
 };
