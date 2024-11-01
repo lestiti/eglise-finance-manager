@@ -11,6 +11,48 @@ import { ProjectsReport } from "./church/ProjectsReport";
 import { SocialReport } from "./church/SocialReport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface ChurchFinancialData {
+  dons: {
+    dimes: number;
+    offrandes_dominicales: number;
+    dons_en_ligne: number;
+    collectes_speciales: number;
+    analyse_mensuelle: {
+      mois: string;
+      montant: number;
+    }[];
+    repartition_activites: {
+      activite: string;
+      montant: number;
+      pourcentage: number;
+    }[];
+  };
+  depenses: {
+    categorie: string;
+    budget: number;
+    depenses: number;
+  }[];
+  departements: {
+    nom: string;
+    budget: number;
+    depenses: number;
+  }[];
+  projets: {
+    nom: string;
+    budget: number;
+    depenses: number;
+    statut: string;
+    description: string;
+  }[];
+  activites_sociales: {
+    nom: string;
+    beneficiaires: number;
+    cout_total: number;
+    cout_par_beneficiaire: number;
+    objectif_atteint: number;
+  }[];
+}
+
 export const FinancialReports = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -25,7 +67,7 @@ export const FinancialReports = () => {
         .limit(1);
 
       if (error) throw error;
-      return data?.[0]?.data;
+      return data?.[0]?.data as ChurchFinancialData;
     }
   });
 
@@ -60,6 +102,10 @@ export const FinancialReports = () => {
 
   if (isLoading) {
     return <div>Chargement des rapports financiers...</div>;
+  }
+
+  if (!financialData) {
+    return <div>Aucune donnée financière disponible</div>;
   }
 
   return (
@@ -100,22 +146,22 @@ export const FinancialReports = () => {
         </TabsList>
 
         <TabsContent value="dons">
-          <DonationsReport data={financialData?.dons} />
+          <DonationsReport data={financialData.dons} />
         </TabsContent>
 
         <TabsContent value="depenses">
           <ExpensesReport 
-            depenses={financialData?.depenses} 
-            departements={financialData?.departements} 
+            depenses={financialData.depenses} 
+            departements={financialData.departements} 
           />
         </TabsContent>
 
         <TabsContent value="projets">
-          <ProjectsReport projets={financialData?.projets} />
+          <ProjectsReport projets={financialData.projets} />
         </TabsContent>
 
         <TabsContent value="social">
-          <SocialReport activites={financialData?.activites_sociales} />
+          <SocialReport activites={financialData.activites_sociales} />
         </TabsContent>
       </Tabs>
     </div>
