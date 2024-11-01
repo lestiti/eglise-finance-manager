@@ -27,6 +27,7 @@ const formSchema = z.object({
   prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   email: z.string().email("Email invalide"),
   role: z.string().min(1, "Veuillez sélectionner un rôle"),
+  telephone: z.string().optional(),
   motDePasse: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
 });
 
@@ -39,55 +40,55 @@ export const UserForm = () => {
       prenom: "",
       email: "",
       role: "",
+      telephone: "",
       motDePasse: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.motDePasse,
-      options: {
-        data: {
-          nom: values.nom,
-          prenom: values.prenom,
-          role: values.role,
+    try {
+      // Créer l'utilisateur dans Auth
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.motDePasse,
+        options: {
+          data: {
+            nom: values.nom,
+            prenom: values.prenom,
+            role: values.role,
+            telephone: values.telephone,
+          },
         },
-      },
-    });
+      });
 
-    if (signUpError) {
+      if (signUpError) throw signUpError;
+
+      // Log l'activité
+      await supabase
+        .from('activity_logs')
+        .insert({
+          action: 'create_user',
+          details: {
+            nom: values.nom,
+            prenom: values.prenom,
+            email: values.email,
+            role: values.role,
+          },
+        });
+
+      toast({
+        title: "Utilisateur créé",
+        description: "Le nouvel utilisateur a été créé avec succès",
+      });
+      form.reset();
+    } catch (error) {
+      console.error('Error creating user:', error);
       toast({
         title: "Erreur",
         description: "Impossible de créer l'utilisateur",
         variant: "destructive",
       });
-      return;
     }
-
-    // Log the activity
-    const { error: logError } = await supabase
-      .from('activity_logs')
-      .insert({
-        user_id: data.user?.id,
-        action: 'create_user',
-        details: {
-          nom: values.nom,
-          prenom: values.prenom,
-          email: values.email,
-          role: values.role,
-        },
-      });
-
-    if (logError) {
-      console.error('Error logging activity:', logError);
-    }
-
-    toast({
-      title: "Utilisateur créé",
-      description: "Le nouvel utilisateur a été créé avec succès",
-    });
-    form.reset();
   };
 
   return (
@@ -140,6 +141,20 @@ export const UserForm = () => {
 
           <FormField
             control={form.control}
+            name="telephone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Téléphone</FormLabel>
+                <FormControl>
+                  <Input type="tel" placeholder="+33 6 12 34 56 78" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="role"
             render={({ field }) => (
               <FormItem>
@@ -154,6 +169,7 @@ export const UserForm = () => {
                     <SelectItem value="admin">Administrateur</SelectItem>
                     <SelectItem value="tresorier">Trésorier</SelectItem>
                     <SelectItem value="responsable">Responsable</SelectItem>
+                    <SelectItem value="utilisateur">Utilisateur</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
