@@ -15,6 +15,18 @@ import { useQuery } from "@tanstack/react-query";
 import { UserActions } from "./UserActions";
 import type { User } from "./types";
 
+interface ProfileWithCounts {
+  id: string;
+  nom: string | null;
+  prenom: string | null;
+  role: string | null;
+  telephone: string | null;
+  email: string | null;
+  created_at: string;
+  transactions: { count: number }[] | null;
+  activities: { count: number }[] | null;
+}
+
 export const UserList = () => {
   const { toast } = useToast();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -40,7 +52,7 @@ export const UserList = () => {
         throw error;
       }
 
-      return profiles?.map(profile => ({
+      return (profiles as ProfileWithCounts[]).map(profile => ({
         ...profile,
         total_transactions: profile.transactions?.[0]?.count || 0,
         total_activities: profile.activities?.[0]?.count || 0
