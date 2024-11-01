@@ -49,10 +49,14 @@ export const MultiYearComparison = () => {
         .limit(5);
       
       if (error) throw error;
-      if (!data || !Array.isArray(data) || !isFinancialDataArray(data)) {
-        return [];
-      }
-      return data;
+      if (!data || !Array.isArray(data)) return [];
+
+      const financialData = data.map(item => ({
+        annee: item.annee,
+        data: typeof item.data === 'string' ? JSON.parse(item.data) : item.data
+      }));
+
+      return isFinancialDataArray(financialData) ? financialData : [];
     }
   });
 
