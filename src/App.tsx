@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { ThemeProvider } from "next-themes";
 import LoginPage from "./pages/auth/login";
 import Index from "./pages/Index";
 import TransactionsPage from "./pages/transactions";
@@ -19,28 +20,30 @@ import SecuritePage from "./pages/securite";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-            <Route path="/transactions" element={<RequireAuth><TransactionsPage /></RequireAuth>} />
-            <Route path="/membres" element={<RequireAuth><MembresPage /></RequireAuth>} />
-            <Route path="/budgets" element={<RequireAuth><BudgetsPage /></RequireAuth>} />
-            <Route path="/tresorerie" element={<RequireAuth><TresoreriePage /></RequireAuth>} />
-            <Route path="/rapports" element={<RequireAuth><RapportsPage /></RequireAuth>} />
-            <Route path="/projets" element={<RequireAuth><ProjetsPage /></RequireAuth>} />
-            <Route path="/utilisateurs" element={<RequireAuth><UtilisateursPage /></RequireAuth>} />
-            <Route path="/securite" element={<RequireAuth><SecuritePage /></RequireAuth>} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider attribute="class" defaultTheme="light">
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+              <Route path="/transactions" element={<RequireAuth><TransactionsPage /></RequireAuth>} />
+              <Route path="/membres" element={<RequireAuth><MembresPage /></RequireAuth>} />
+              <Route path="/budgets" element={<RequireAuth><BudgetsPage /></RequireAuth>} />
+              <Route path="/tresorerie" element={<RequireAuth><TresoreriePage /></RequireAuth>} />
+              <Route path="/rapports" element={<RequireAuth><RapportsPage /></RequireAuth>} />
+              <Route path="/projets" element={<RequireAuth><ProjetsPage /></RequireAuth>} />
+              <Route path="/utilisateurs" element={<RequireAuth><UtilisateursPage /></RequireAuth>} />
+              <Route path="/securite" element={<RequireAuth><SecuritePage /></RequireAuth>} />
+            </Routes>
+            <Toaster />
+            <Sonner />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
