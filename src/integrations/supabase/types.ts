@@ -82,6 +82,63 @@ export type Database = {
           },
         ]
       }
+      budget_reports: {
+        Row: {
+          annee: number
+          created_at: string | null
+          department_budget_id: string | null
+          ecart: number | null
+          financial_statement_id: string | null
+          id: string
+          mois: number | null
+          montant_prevu: number
+          montant_realise: number
+          periode: string
+          updated_at: string | null
+        }
+        Insert: {
+          annee: number
+          created_at?: string | null
+          department_budget_id?: string | null
+          ecart?: number | null
+          financial_statement_id?: string | null
+          id?: string
+          mois?: number | null
+          montant_prevu?: number
+          montant_realise?: number
+          periode: string
+          updated_at?: string | null
+        }
+        Update: {
+          annee?: number
+          created_at?: string | null
+          department_budget_id?: string | null
+          ecart?: number | null
+          financial_statement_id?: string | null
+          id?: string
+          mois?: number | null
+          montant_prevu?: number
+          montant_realise?: number
+          periode?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_reports_department_budget_id_fkey"
+            columns: ["department_budget_id"]
+            isOneToOne: false
+            referencedRelation: "department_budgets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_reports_financial_statement_id_fkey"
+            columns: ["financial_statement_id"]
+            isOneToOne: false
+            referencedRelation: "financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_tracking: {
         Row: {
           annee: number

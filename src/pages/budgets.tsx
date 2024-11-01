@@ -2,6 +2,8 @@ import { NavigationBar } from "@/components/layout/NavigationBar";
 import { BudgetOverview } from "@/components/budgets/BudgetOverview";
 import { ExpenseForm } from "@/components/budgets/ExpenseForm";
 import { DepartmentExpenses } from "@/components/budgets/DepartmentExpenses";
+import { BudgetTracking } from "@/components/budgets/BudgetTracking";
+import { BudgetComparison } from "@/components/budgets/BudgetComparison";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BudgetsPage = () => {
@@ -14,12 +16,22 @@ const BudgetsPage = () => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="tracking">Suivi Budgétaire</TabsTrigger>
+            <TabsTrigger value="comparison">Comparaisons</TabsTrigger>
             <TabsTrigger value="expense">Nouvelle Dépense</TabsTrigger>
             <TabsTrigger value="department">Dépenses par Département</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
             <BudgetOverview />
+          </TabsContent>
+
+          <TabsContent value="tracking">
+            <BudgetTracking />
+          </TabsContent>
+
+          <TabsContent value="comparison">
+            <BudgetComparison />
           </TabsContent>
 
           <TabsContent value="expense">

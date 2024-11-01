@@ -48,7 +48,7 @@ export const ExpenseForm = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       // Créer la transaction
-      const { error: transactionError } = await supabase
+      const { data: transactionData, error: transactionError } = await supabase
         .from('transactions')
         .insert([{
           type: 'depense',
@@ -56,7 +56,9 @@ export const ExpenseForm = () => {
           description: `${values.departement} - ${values.description}`,
           numero_facture: values.facture,
           methode_paiement: 'virement',
-        }]);
+        }])
+        .select()
+        .single();
 
       if (transactionError) throw transactionError;
 
@@ -72,6 +74,19 @@ export const ExpenseForm = () => {
 
       if (trackingError) throw trackingError;
 
+      // Créer ou mettre à jour le rapport budgétaire
+      const { error: reportError } = await supabase
+        .from('budget_reports')
+        .upsert([{
+          department_budget_id: values.departement,
+          montant_realise: parseFloat(values.montant),
+          periode: 'mensuel',
+          annee: new Date().getFullYear(),
+          mois: new Date().getMonth() + 1,
+        }]);
+
+      if (reportError) throw reportError;
+
       toast({
         title: "Dépense enregistrée",
         description: "La dépense a été enregistrée avec succès",
@@ -80,6 +95,7 @@ export const ExpenseForm = () => {
       // Invalider les requêtes pour forcer le rechargement des données
       queryClient.invalidateQueries({ queryKey: ['department-budgets'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['budget-reports'] });
 
       form.reset();
     } catch (error) {
