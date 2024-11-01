@@ -2,70 +2,58 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { formatAmount } from "@/lib/utils";
 
-interface ExpenseData {
-  categorie: string;
-  budget: number;
-  depenses: number;
-}
-
-interface DepartmentData {
+interface DepartmentExpense {
   nom: string;
-  budget: number;
-  depenses: number;
+  budget_annuel: number;
+  budget_mensuel: number;
+  depenses_actuelles: number;
 }
 
 interface ExpensesReportProps {
-  depenses: ExpenseData[];
-  departements: DepartmentData[];
+  departments?: DepartmentExpense[];
 }
 
-export const ExpensesReport = ({ depenses, departements }: ExpensesReportProps) => {
+export const ExpensesReport = ({ departments }: ExpensesReportProps) => {
+  if (!departments || departments.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-xl font-semibold mb-6">Rapport des Dépenses</h3>
+        <p className="text-gray-500">Aucune donnée disponible</p>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Rapport des Dépenses</h3>
       
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
-          <h4 className="font-medium mb-3">Dépenses par Catégorie</h4>
-          <div className="space-y-4">
-            {depenses.map((item) => (
-              <div key={item.categorie}>
-                <div className="flex justify-between mb-2">
-                  <span>{item.categorie}</span>
-                  <div>
-                    <span className="mr-2">{formatAmount(item.depenses)}</span>
-                    <span className="text-sm text-gray-500">
-                      / {formatAmount(item.budget)}
-                    </span>
+          <h4 className="font-medium mb-4">Dépenses par Département</h4>
+          <div className="space-y-6">
+            {departments.map((dept) => (
+              <div key={dept.nom} className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <span className="font-medium">{dept.nom}</span>
+                  <div className="text-sm text-gray-500">
+                    Budget annuel: {formatAmount(dept.budget_annuel)}
                   </div>
                 </div>
-                <Progress 
-                  value={(item.depenses / item.budget) * 100} 
-                  className="h-2"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-medium mb-3">Dépenses par Département</h4>
-          <div className="space-y-4">
-            {departements.map((dept) => (
-              <div key={dept.nom}>
-                <div className="flex justify-between mb-2">
-                  <span>{dept.nom}</span>
-                  <div>
-                    <span className="mr-2">{formatAmount(dept.depenses)}</span>
-                    <span className="text-sm text-gray-500">
-                      / {formatAmount(dept.budget)}
-                    </span>
+                
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Dépenses actuelles</span>
+                    <span>{formatAmount(dept.depenses_actuelles)}</span>
+                  </div>
+                  <Progress 
+                    value={(dept.depenses_actuelles / dept.budget_annuel) * 100} 
+                    className="h-2"
+                  />
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Budget mensuel</span>
+                    <span>{formatAmount(dept.budget_mensuel)}</span>
                   </div>
                 </div>
-                <Progress 
-                  value={(dept.depenses / dept.budget) * 100} 
-                  className="h-2"
-                />
               </div>
             ))}
           </div>

@@ -4,101 +4,62 @@ import { Download, Printer } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/components/auth/AuthProvider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DonationsReport } from "./church/DonationsReport";
 import { ExpensesReport } from "./church/ExpensesReport";
 import { ProjectsReport } from "./church/ProjectsReport";
 import { SocialReport } from "./church/SocialReport";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Json } from "@/integrations/supabase/types";
-
-interface ChurchFinancialData {
-  dons: {
-    dimes: number;
-    offrandes_dominicales: number;
-    dons_en_ligne: number;
-    collectes_speciales: number;
-    analyse_mensuelle: {
-      mois: string;
-      montant: number;
-    }[];
-    repartition_activites: {
-      activite: string;
-      montant: number;
-      pourcentage: number;
-    }[];
-  };
-  depenses: {
-    categorie: string;
-    budget: number;
-    depenses: number;
-  }[];
-  departements: {
-    nom: string;
-    budget: number;
-    depenses: number;
-  }[];
-  projets: {
-    nom: string;
-    budget: number;
-    depenses: number;
-    statut: string;
-    description: string;
-  }[];
-  activites_sociales: {
-    nom: string;
-    beneficiaires: number;
-    cout_total: number;
-    cout_par_beneficiaire: number;
-    objectif_atteint: number;
-  }[];
-}
 
 export const FinancialReports = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
 
-  const { data: financialData, isLoading } = useQuery({
-    queryKey: ['financial-statements'],
+  const { data: donations, isLoading: isLoadingDonations } = useQuery({
+    queryKey: ['donations'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('financial_statements')
+        .from('donations')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
+        .order('date_don', { ascending: false });
       if (error) throw error;
-      
-      // Safely type cast the JSON data
-      const rawData = data?.[0]?.data as Json;
-      if (!rawData || typeof rawData !== 'object') {
-        return null;
-      }
+      return data;
+    }
+  });
 
-      // Type assertion after validation
-      return rawData as unknown as ChurchFinancialData;
+  const { data: departments, isLoading: isLoadingDepartments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('department_budgets')
+        .select('*');
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: projects, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*');
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: activities, isLoading: isLoadingActivities } = useQuery({
+    queryKey: ['charitable-activities'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('charitable_activities')
+        .select('*');
+      if (error) throw error;
+      return data;
     }
   });
 
   const handleExport = async (format: string) => {
     try {
-      if (!financialData || !user?.id) return;
-
-      const exportData = {
-        user_id: user.id,
-        type: 'bilan',
-        periode: 'mensuel',
-        annee: new Date().getFullYear(),
-        mois: new Date().getMonth() + 1,
-        data: financialData as unknown as Json
-      };
-
-      const { error } = await supabase
-        .from('financial_statements')
-        .insert([exportData]);
-
-      if (error) throw error;
-
       toast({
         title: "Export réussi",
         description: `Le rapport a été exporté en format ${format}`,
@@ -113,7 +74,7 @@ export const FinancialReports = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingDonations || isLoadingDepartments || isLoadingProjects || isLoadingActivities) {
     return (
       <div className="p-8">
         <Card className="p-6">
@@ -161,22 +122,19 @@ export const FinancialReports = () => {
         </TabsList>
 
         <TabsContent value="dons">
-          <DonationsReport data={financialData?.dons} />
+          <DonationsReport donations={donations} />
         </TabsContent>
 
         <TabsContent value="depenses">
-          <ExpensesReport 
-            depenses={financialData?.depenses} 
-            departements={financialData?.departements} 
-          />
+          <ExpensesReport departments={departments} />
         </TabsContent>
 
         <TabsContent value="projets">
-          <ProjectsReport projets={financialData?.projets} />
+          <ProjectsReport projects={projects} />
         </TabsContent>
 
         <TabsContent value="social">
-          <SocialReport activites={financialData?.activites_sociales} />
+          <SocialReport activities={activities} />
         </TabsContent>
       </Tabs>
     </div>
