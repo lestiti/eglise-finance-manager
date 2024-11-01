@@ -122,7 +122,27 @@ export const FinancialReports = () => {
         .limit(1);
 
       if (error) throw error;
-      return (data?.[0]?.data as FinancialData) || defaultFinancialData;
+      
+      // Safely type cast the data
+      const rawData = data?.[0]?.data;
+      if (!rawData) return defaultFinancialData;
+      
+      try {
+        // Validate that the data matches our expected structure
+        const typedData = rawData as FinancialData;
+        if (
+          typeof typedData === 'object' &&
+          'bilan' in typedData &&
+          'compte_resultat' in typedData &&
+          'flux_tresorerie' in typedData &&
+          'notes' in typedData
+        ) {
+          return typedData;
+        }
+        return defaultFinancialData;
+      } catch {
+        return defaultFinancialData;
+      }
     }
   });
 
@@ -137,7 +157,7 @@ export const FinancialReports = () => {
             periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
-            data: financialData
+            data: JSON.parse(JSON.stringify(financialData)) // Convert to plain object
           }
         ]);
 
@@ -180,7 +200,7 @@ export const FinancialReports = () => {
             periode: 'mensuel',
             annee: new Date().getFullYear(),
             mois: new Date().getMonth() + 1,
-            data: financialData
+            data: JSON.parse(JSON.stringify(financialData)) // Convert to plain object
           }
         ]);
 
