@@ -82,6 +82,116 @@ export type Database = {
           },
         ]
       }
+      charitable_activities: {
+        Row: {
+          budget_alloue: number
+          created_at: string | null
+          date_debut: string | null
+          date_fin: string | null
+          depenses_actuelles: number | null
+          description: string | null
+          id: string
+          nom: string
+          nombre_beneficiaires: number | null
+          objectif_beneficiaires: number | null
+        }
+        Insert: {
+          budget_alloue: number
+          created_at?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          depenses_actuelles?: number | null
+          description?: string | null
+          id?: string
+          nom: string
+          nombre_beneficiaires?: number | null
+          objectif_beneficiaires?: number | null
+        }
+        Update: {
+          budget_alloue?: number
+          created_at?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          depenses_actuelles?: number | null
+          description?: string | null
+          id?: string
+          nom?: string
+          nombre_beneficiaires?: number | null
+          objectif_beneficiaires?: number | null
+        }
+        Relationships: []
+      }
+      department_budgets: {
+        Row: {
+          annee: number
+          budget_annuel: number
+          budget_mensuel: number
+          created_at: string | null
+          id: string
+          mois: number | null
+          nom: string
+        }
+        Insert: {
+          annee: number
+          budget_annuel: number
+          budget_mensuel: number
+          created_at?: string | null
+          id?: string
+          mois?: number | null
+          nom: string
+        }
+        Update: {
+          annee?: number
+          budget_annuel?: number
+          budget_mensuel?: number
+          created_at?: string | null
+          id?: string
+          mois?: number | null
+          nom?: string
+        }
+        Relationships: []
+      }
+      donations: {
+        Row: {
+          activite: string | null
+          created_at: string | null
+          date_don: string | null
+          id: string
+          montant: number
+          source: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          activite?: string | null
+          created_at?: string | null
+          date_don?: string | null
+          id?: string
+          montant: number
+          source: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          activite?: string | null
+          created_at?: string | null
+          date_don?: string | null
+          id?: string
+          montant?: number
+          source?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_statements: {
         Row: {
           annee: number
@@ -156,6 +266,42 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          budget_total: number
+          created_at: string | null
+          date_debut: string | null
+          date_fin: string | null
+          depenses_actuelles: number | null
+          description: string | null
+          id: string
+          nom: string
+          statut: string | null
+        }
+        Insert: {
+          budget_total: number
+          created_at?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          depenses_actuelles?: number | null
+          description?: string | null
+          id?: string
+          nom: string
+          statut?: string | null
+        }
+        Update: {
+          budget_total?: number
+          created_at?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          depenses_actuelles?: number | null
+          description?: string | null
+          id?: string
+          nom?: string
+          statut?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           created_at: string | null
@@ -202,6 +348,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      treasury_movements: {
+        Row: {
+          categorie: string
+          created_at: string | null
+          date_mouvement: string | null
+          description: string | null
+          id: string
+          montant: number
+          solde_apres: number
+          type: string
+        }
+        Insert: {
+          categorie: string
+          created_at?: string | null
+          date_mouvement?: string | null
+          description?: string | null
+          id?: string
+          montant: number
+          solde_apres: number
+          type: string
+        }
+        Update: {
+          categorie?: string
+          created_at?: string | null
+          date_mouvement?: string | null
+          description?: string | null
+          id?: string
+          montant?: number
+          solde_apres?: number
+          type?: string
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { formatAmount } from "@/lib/utils";
 
 interface BalanceSheetData {
   actifs_courants: {
@@ -30,8 +31,6 @@ interface BalanceSheetProps {
 }
 
 export const BalanceSheet = ({ data }: BalanceSheetProps) => {
-  const formatAmount = (amount: number) => amount.toLocaleString() + " Ar";
-
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Bilan</h3>

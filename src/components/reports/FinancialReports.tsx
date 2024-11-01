@@ -1,9 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Printer, Eye } from "lucide-react";
+import { FileText, Download, Printer } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BalanceSheet } from "./financial-statements/BalanceSheet";
@@ -11,12 +9,11 @@ import { IncomeStatement } from "./financial-statements/IncomeStatement";
 import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { formatAmount } from "@/lib/utils";
 
 export const FinancialReports = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [selectedReport, setSelectedReport] = useState<any>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
 
   const { data: financialData, isLoading } = useQuery({
     queryKey: ['financial-statements'],
@@ -130,7 +127,7 @@ export const FinancialReports = () => {
 
   const handleExport = async (format: string) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('financial_statements')
         .insert([
           {
@@ -141,9 +138,7 @@ export const FinancialReports = () => {
             mois: new Date().getMonth() + 1,
             data: financialData
           }
-        ])
-        .select()
-        .single();
+        ]);
 
       if (error) throw error;
 
@@ -190,15 +185,7 @@ export const FinancialReports = () => {
 
       if (error) throw error;
 
-      const printWindow = window.open('', '', 'height=600,width=800');
-      if (printWindow) {
-        printWindow.document.write('<html><head><title>Rapport Financier</title>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write('<pre>' + JSON.stringify(financialData, null, 2) + '</pre>');
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.print();
-      }
+      window.print();
 
       toast({
         title: "Impression lancée",
