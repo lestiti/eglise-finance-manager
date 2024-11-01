@@ -3,6 +3,8 @@ import { TresoreryOverview } from "@/components/treasury/TresoreryOverview";
 import { TresoreryForecast } from "@/components/treasury/TresoreryForecast";
 import { LiquidityManagement } from "@/components/treasury/LiquidityManagement";
 import { LiquidityAnalysis } from "@/components/treasury/LiquidityAnalysis";
+import { TreasuryMovementForm } from "@/components/treasury/forms/TreasuryMovementForm";
+import { ForecastForm } from "@/components/treasury/forms/ForecastForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Données d'exemple pour l'analyse des liquidités
@@ -74,6 +76,7 @@ const TresoreriePage = () => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="movements">Mouvements</TabsTrigger>
             <TabsTrigger value="forecast">Prévisions</TabsTrigger>
             <TabsTrigger value="liquidity">Liquidités</TabsTrigger>
             <TabsTrigger value="analysis">Analyse Détaillée</TabsTrigger>
@@ -83,8 +86,18 @@ const TresoreriePage = () => {
             <TresoreryOverview />
           </TabsContent>
 
+          <TabsContent value="movements">
+            <div className="space-y-6">
+              <TreasuryMovementForm />
+              <TresoreryOverview />
+            </div>
+          </TabsContent>
+
           <TabsContent value="forecast">
-            <TresoreryForecast />
+            <div className="space-y-6">
+              <ForecastForm />
+              <TresoreryForecast />
+            </div>
           </TabsContent>
 
           <TabsContent value="liquidity">
