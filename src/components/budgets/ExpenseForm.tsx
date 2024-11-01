@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   departement: z.string().min(1, "Veuillez sélectionner un département"),
@@ -18,6 +20,21 @@ const formSchema = z.object({
 
 export const ExpenseForm = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('department_budgets')
+        .select('*')
+        .eq('annee', new Date().getFullYear());
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -28,12 +45,50 @@ export const ExpenseForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    toast({
-      title: "Dépense enregistrée",
-      description: "La dépense a été enregistrée avec succès",
-    });
-    form.reset();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // Créer la transaction
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .insert([{
+          type: 'depense',
+          montant: parseFloat(values.montant),
+          description: `${values.departement} - ${values.description}`,
+          numero_facture: values.facture,
+          methode_paiement: 'virement',
+        }]);
+
+      if (transactionError) throw transactionError;
+
+      // Mettre à jour le suivi budgétaire
+      const { error: trackingError } = await supabase
+        .from('budget_tracking')
+        .upsert([{
+          department_id: values.departement,
+          montant_utilise: parseFloat(values.montant),
+          mois: new Date().getMonth() + 1,
+          annee: new Date().getFullYear(),
+        }]);
+
+      if (trackingError) throw trackingError;
+
+      toast({
+        title: "Dépense enregistrée",
+        description: "La dépense a été enregistrée avec succès",
+      });
+
+      // Invalider les requêtes pour forcer le rechargement des données
+      queryClient.invalidateQueries({ queryKey: ['department-budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+
+      form.reset();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement de la dépense",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -54,10 +109,11 @@ export const ExpenseForm = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="jeunesse">Département Jeunesse</SelectItem>
-                      <SelectItem value="evenements">Département Événements</SelectItem>
-                      <SelectItem value="maintenance">Département Maintenance</SelectItem>
-                      <SelectItem value="communication">Département Communication</SelectItem>
+                      {departments?.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id}>
+                          {dept.nom}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

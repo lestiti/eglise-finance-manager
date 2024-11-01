@@ -7,33 +7,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const BudgetOverview = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [newDeptName, setNewDeptName] = useState("");
   const [newDeptBudget, setNewDeptBudget] = useState("");
-  const [departments, setDepartments] = useState([
-    {
-      name: "Département Jeunesse",
-      budget: 5000000,
-      spent: 4000000,
-      alert: true,
-    },
-    {
-      name: "Département Événements",
-      budget: 8000000,
-      spent: 5000000,
-      alert: false,
-    },
-    {
-      name: "Département Maintenance",
-      budget: 6000000,
-      spent: 2000000,
-      alert: false,
-    },
-  ]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddDepartment = () => {
+  const { data: departments, isLoading } = useQuery({
+    queryKey: ['department-budgets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('department_budgets')
+        .select('*')
+        .eq('annee', new Date().getFullYear());
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const handleAddDepartment = async () => {
     if (!newDeptName || !newDeptBudget) {
       toast({
         title: "Erreur",
@@ -43,7 +40,7 @@ export const BudgetOverview = () => {
       return;
     }
 
-    const budget = parseInt(newDeptBudget);
+    const budget = parseFloat(newDeptBudget);
     if (isNaN(budget)) {
       toast({
         title: "Erreur",
@@ -53,37 +50,67 @@ export const BudgetOverview = () => {
       return;
     }
 
-    setDepartments([
-      ...departments,
-      {
-        name: newDeptName,
-        budget: budget,
-        spent: 0,
-        alert: false,
-      },
-    ]);
+    try {
+      const { error } = await supabase
+        .from('department_budgets')
+        .insert([{
+          nom: newDeptName,
+          budget_annuel: budget,
+          budget_mensuel: budget / 12,
+          annee: new Date().getFullYear()
+        }]);
 
-    setNewDeptName("");
-    setNewDeptBudget("");
+      if (error) throw error;
 
-    toast({
-      title: "Succès",
-      description: "Le département a été créé avec succès",
-    });
+      toast({
+        title: "Succès",
+        description: "Le département a été créé avec succès",
+      });
+
+      setNewDeptName("");
+      setNewDeptBudget("");
+      setIsDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['department-budgets'] });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du département",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteDepartment = (deptName: string) => {
-    setDepartments(departments.filter((dept) => dept.name !== deptName));
-    toast({
-      title: "Succès",
-      description: "Le département a été supprimé avec succès",
-    });
+  const handleDeleteDepartment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('department_budgets')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Le département a été supprimé avec succès",
+      });
+      queryClient.invalidateQueries({ queryKey: ['department-budgets'] });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du département",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
@@ -104,7 +131,7 @@ export const BudgetOverview = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Budget initial (Ar)</label>
+                <label className="text-sm font-medium">Budget annuel (Ar)</label>
                 <Input
                   type="number"
                   placeholder="Ex: 5000000"
@@ -121,22 +148,23 @@ export const BudgetOverview = () => {
       </div>
 
       {departments.map((dept) => {
-        const progress = (dept.spent / dept.budget) * 100;
-        const remaining = dept.budget - dept.spent;
+        const budget_tracking = dept.budget_tracking || { montant_utilise: 0 };
+        const progress = (budget_tracking.montant_utilise / dept.budget_annuel) * 100;
+        const remaining = dept.budget_annuel - (budget_tracking.montant_utilise || 0);
         
         return (
-          <Card key={dept.name} className="p-6">
+          <Card key={dept.id} className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-lg font-semibold">{dept.name}</h3>
+                <h3 className="text-lg font-semibold">{dept.nom}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Budget: {dept.budget.toLocaleString()} Ariary
+                  Budget annuel: {dept.budget_annuel.toLocaleString()} Ariary
                 </p>
               </div>
               <div className="flex items-start gap-4">
                 <div className="text-right">
                   <p className="font-medium">
-                    Dépensé: {dept.spent.toLocaleString()} Ariary
+                    Dépensé: {budget_tracking.montant_utilise?.toLocaleString() || "0"} Ariary
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Reste: {remaining.toLocaleString()} Ariary
@@ -146,7 +174,7 @@ export const BudgetOverview = () => {
                   variant="outline"
                   size="icon"
                   className="text-red-600 hover:text-red-700"
-                  onClick={() => handleDeleteDepartment(dept.name)}
+                  onClick={() => handleDeleteDepartment(dept.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -155,7 +183,7 @@ export const BudgetOverview = () => {
             
             <Progress value={progress} className="h-2" />
             
-            {dept.alert && progress > 80 && (
+            {progress > 80 && (
               <Alert variant="destructive" className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Attention</AlertTitle>

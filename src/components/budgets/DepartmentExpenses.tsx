@@ -8,47 +8,63 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 export const DepartmentExpenses = () => {
-  const expenses = [
-    {
-      id: 1,
-      date: "2024-02-20",
-      departement: "Jeunesse",
-      description: "Matériel pour activité jeunes",
-      montant: "250,000 Ariary",
-      facture: "FAC-2024-001",
-    },
-    {
-      id: 2,
-      date: "2024-02-19",
-      departement: "Maintenance",
-      description: "Réparation climatisation",
-      montant: "800,000 Ariary",
-      facture: "FAC-2024-002",
-    },
-    {
-      id: 3,
-      date: "2024-02-18",
-      departement: "Événements",
-      description: "Location matériel sonorisation",
-      montant: "500,000 Ariary",
-      facture: "FAC-2024-003",
-    },
-  ];
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("tous");
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('department_budgets')
+        .select('*')
+        .eq('annee', new Date().getFullYear());
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: transactions, isLoading } = useQuery({
+    queryKey: ['department-transactions', selectedDepartment],
+    queryFn: async () => {
+      let query = supabase
+        .from('transactions')
+        .select('*')
+        .eq('type', 'depense')
+        .order('date_transaction', { ascending: false });
+
+      if (selectedDepartment !== "tous") {
+        query = query.ilike('description', `${selectedDepartment}%`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
 
   return (
     <Card className="p-6">
       <div className="flex items-center gap-4 mb-6">
-        <Select>
+        <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Département" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="tous">Tous les départements</SelectItem>
-            <SelectItem value="jeunesse">Département Jeunesse</SelectItem>
-            <SelectItem value="evenements">Département Événements</SelectItem>
-            <SelectItem value="maintenance">Département Maintenance</SelectItem>
+            {departments?.map((dept) => (
+              <SelectItem key={dept.id} value={dept.nom}>
+                {dept.nom}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -65,15 +81,20 @@ export const DepartmentExpenses = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell>{expense.date}</TableCell>
-                <TableCell>{expense.departement}</TableCell>
-                <TableCell>{expense.description}</TableCell>
-                <TableCell>{expense.montant}</TableCell>
-                <TableCell>{expense.facture}</TableCell>
-              </TableRow>
-            ))}
+            {transactions.map((transaction) => {
+              const [department = ""] = transaction.description?.split('-') || [];
+              return (
+                <TableRow key={transaction.id}>
+                  <TableCell>
+                    {new Date(transaction.date_transaction).toLocaleDateString('fr-FR')}
+                  </TableCell>
+                  <TableCell>{department.trim()}</TableCell>
+                  <TableCell>{transaction.description}</TableCell>
+                  <TableCell>{transaction.montant.toLocaleString()} Ar</TableCell>
+                  <TableCell>{transaction.numero_facture || 'N/A'}</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
