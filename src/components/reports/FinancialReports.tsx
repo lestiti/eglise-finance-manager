@@ -11,7 +11,7 @@ import { IncomeStatement } from "./financial-statements/IncomeStatement";
 import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { FinancialData } from "@/types/financial";
+import { FinancialData, isFinancialData } from "@/types/financial";
 
 export const FinancialReports = () => {
   const { toast } = useToast();
@@ -29,7 +29,12 @@ export const FinancialReports = () => {
         .limit(1);
 
       if (error) throw error;
-      return (data?.[0]?.data as FinancialData) || defaultFinancialData;
+      
+      const rawData = data?.[0]?.data;
+      if (rawData && isFinancialData(rawData)) {
+        return rawData;
+      }
+      return defaultFinancialData;
     }
   });
 
@@ -131,18 +136,18 @@ export const FinancialReports = () => {
 
   const handleExport = async (format: string) => {
     try {
+      const exportData = {
+        user_id: user?.id,
+        type: 'export',
+        periode: 'mensuel',
+        annee: new Date().getFullYear(),
+        mois: new Date().getMonth() + 1,
+        data: financialData as unknown as Json
+      };
+
       const { data, error } = await supabase
         .from('financial_statements')
-        .insert([
-          {
-            user_id: user?.id,
-            type: 'export',
-            periode: 'mensuel',
-            annee: new Date().getFullYear(),
-            mois: new Date().getMonth() + 1,
-            data: financialData
-          }
-        ])
+        .insert([exportData])
         .select()
         .single();
 
@@ -176,18 +181,18 @@ export const FinancialReports = () => {
 
   const handlePrint = async () => {
     try {
+      const printData = {
+        user_id: user?.id,
+        type: 'print',
+        periode: 'mensuel',
+        annee: new Date().getFullYear(),
+        mois: new Date().getMonth() + 1,
+        data: financialData as unknown as Json
+      };
+
       const { error } = await supabase
         .from('financial_statements')
-        .insert([
-          {
-            user_id: user?.id,
-            type: 'print',
-           periode: 'mensuel',
-            annee: new Date().getFullYear(),
-            mois: new Date().getMonth() + 1,
-            data: financialData
-          }
-        ]);
+        .insert([printData]);
 
       if (error) throw error;
 

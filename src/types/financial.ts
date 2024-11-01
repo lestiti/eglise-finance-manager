@@ -1,3 +1,5 @@
+import { Json } from "@/integrations/supabase/types";
+
 export interface FinancialData {
   bilan: {
     actifs_courants: {
@@ -72,3 +74,15 @@ export interface FinancialData {
     risques_incertitudes: string[];
   };
 }
+
+export const isFinancialData = (data: unknown): data is FinancialData => {
+  const d = data as FinancialData;
+  return (
+    d &&
+    typeof d === 'object' &&
+    'bilan' in d &&
+    'compte_resultat' in d &&
+    'flux_tresorerie' in d &&
+    'notes' in d
+  );
+};
