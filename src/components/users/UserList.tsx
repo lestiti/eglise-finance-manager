@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,24 +9,11 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit2, Trash2, Lock, UserCheck, History } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
-interface User {
-  id: string;
-  nom: string | null;
-  prenom: string | null;
-  role: string | null;
-  telephone: string | null;
-  created_at: string;
-  last_sign_in?: string;
-  total_transactions?: number;
-  total_activities?: number;
-}
+import { UserActions } from "./UserActions";
+import type { User } from "./types";
 
 export const UserList = () => {
   const { toast } = useToast();
@@ -39,6 +26,7 @@ export const UserList = () => {
         .from('profiles')
         .select(`
           *,
+          email,
           transactions:transactions(count),
           activities:activity_logs(count)
         `);
@@ -56,7 +44,7 @@ export const UserList = () => {
         ...profile,
         total_transactions: profile.transactions?.[0]?.count || 0,
         total_activities: profile.activities?.[0]?.count || 0
-      })) || [];
+      })) as User[];
     }
   });
 
@@ -140,77 +128,17 @@ export const UserList = () => {
                   <div>Activités: {user.total_activities}</div>
                 </div>
               </TableCell>
-              <TableCell className="space-x-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <History className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Historique d'activité</DialogTitle>
-                    </DialogHeader>
-                    <UserActivityHistory userId={user.id} />
-                  </DialogContent>
-                </Dialog>
-                <Button variant="outline" size="icon">
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => handleDelete(user.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => handleResetPassword(user.email || '')}
-                >
-                  <Lock className="h-4 w-4" />
-                </Button>
+              <TableCell>
+                <UserActions 
+                  user={user}
+                  onDelete={handleDelete}
+                  onResetPassword={handleResetPassword}
+                />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </Card>
-  );
-};
-
-const UserActivityHistory = ({ userId }: { userId: string }) => {
-  const { data: activities } = useQuery({
-    queryKey: ['user-activities', userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('activity_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  return (
-    <div className="space-y-4">
-      {activities?.map((activity) => (
-        <div key={activity.id} className="border-b pb-2">
-          <div className="font-medium">{activity.action}</div>
-          <div className="text-sm text-gray-500">
-            {new Date(activity.created_at).toLocaleString()}
-          </div>
-          {activity.details && (
-            <pre className="text-xs bg-gray-50 p-2 rounded mt-1">
-              {JSON.stringify(activity.details, null, 2)}
-            </pre>
-          )}
-        </div>
-      ))}
-    </div>
   );
 };
