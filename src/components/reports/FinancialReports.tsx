@@ -182,6 +182,7 @@ export const FinancialReports = () => {
 
       <DonationReport />
       <ExpenseReport />
+      <BudgetReport />
       <ProjectManagementReport />
       <TreasuryReport />
       <SocialAidReport />

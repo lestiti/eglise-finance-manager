@@ -82,6 +82,50 @@ export type Database = {
           },
         ]
       }
+      budget_tracking: {
+        Row: {
+          annee: number
+          created_at: string | null
+          department_id: string | null
+          id: string
+          mois: number
+          montant_alloue: number
+          montant_utilise: number
+          notes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          annee: number
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          mois: number
+          montant_alloue?: number
+          montant_utilise?: number
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          annee?: number
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          mois?: number
+          montant_alloue?: number
+          montant_utilise?: number
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_tracking_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "department_budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       charitable_activities: {
         Row: {
           budget_alloue: number
