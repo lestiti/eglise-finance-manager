@@ -8,6 +8,7 @@ import { ExpenseReport } from "./expenses/ExpenseReport";
 import { ProjectManagementReport } from "./financial-statements/ProjectManagementReport";
 import { TreasuryReport } from "./financial-statements/TreasuryReport";
 import { SocialAidReport } from "./social-aid/SocialAidReport";
+import { AnnualReport } from "./annual/AnnualReport";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { convertToJson } from "@/lib/typeUtils";
 import { FinancialData } from "@/types/financial";
@@ -184,6 +185,7 @@ export const FinancialReports = () => {
       <ProjectManagementReport />
       <TreasuryReport />
       <SocialAidReport />
+      <AnnualReport />
     </div>
   );
 };
