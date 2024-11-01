@@ -52,7 +52,9 @@ export const UserList = () => {
         throw error;
       }
 
-      return (profiles as ProfileWithCounts[]).map(profile => ({
+      if (!profiles) return [];
+
+      return (profiles as unknown as ProfileWithCounts[]).map(profile => ({
         ...profile,
         total_transactions: profile.transactions?.[0]?.count || 0,
         total_activities: profile.activities?.[0]?.count || 0
