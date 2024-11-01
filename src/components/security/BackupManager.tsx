@@ -85,7 +85,7 @@ export const BackupManager = () => {
                   Créée le: {new Date(backup.created_at).toLocaleString()}
                 </p>
               </div>
-              <Badge variant={backup.status === 'completed' ? 'success' : 'warning'}>
+              <Badge variant={backup.status === 'completed' ? 'default' : 'secondary'}>
                 {backup.status}
               </Badge>
             </div>
