@@ -11,7 +11,8 @@ import {
   FileText,
   FolderKanban,
   UserCog,
-  LogOut
+  LogOut,
+  Shield
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -40,15 +41,11 @@ export const NavigationBar = () => {
     }
   };
 
-  // Safe keyboard event handler
   const handleKeyDown = (event: KeyboardEvent) => {
     const key = event?.key?.toLowerCase();
     if (!key) return;
-    
-    // Add keyboard shortcuts if needed
   };
 
-  // Add event listener with safe handler
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -94,6 +91,10 @@ export const NavigationBar = () => {
           <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
             <UserCog className="h-5 w-5" />
             Utilisateurs
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/securite")} className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Sécurité
           </Button>
           <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
             <Settings className="h-5 w-5" />

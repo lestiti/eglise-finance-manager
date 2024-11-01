@@ -41,6 +41,47 @@ export type Database = {
           },
         ]
       }
+      backup_metadata: {
+        Row: {
+          backup_date: string | null
+          backup_size: number | null
+          backup_type: string
+          created_at: string | null
+          encryption_key_hash: string | null
+          id: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          backup_date?: string | null
+          backup_size?: number | null
+          backup_type: string
+          created_at?: string | null
+          encryption_key_hash?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          backup_date?: string | null
+          backup_size?: number | null
+          backup_type?: string
+          created_at?: string | null
+          encryption_key_hash?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backup_metadata_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

@@ -14,6 +14,7 @@ import TresoreriePage from "./pages/tresorerie";
 import RapportsPage from "./pages/rapports";
 import ProjetsPage from "./pages/projets";
 import UtilisateursPage from "./pages/utilisateurs";
+import SecuritePage from "./pages/securite";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/rapports" element={<RequireAuth><RapportsPage /></RequireAuth>} />
             <Route path="/projets" element={<RequireAuth><ProjetsPage /></RequireAuth>} />
             <Route path="/utilisateurs" element={<RequireAuth><UtilisateursPage /></RequireAuth>} />
+            <Route path="/securite" element={<RequireAuth><SecuritePage /></RequireAuth>} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
