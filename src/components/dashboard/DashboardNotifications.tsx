@@ -38,15 +38,7 @@ export const DashboardNotifications = () => {
     }
   });
 
-  const getTimeAgo = (date: string) => {
-    const diff = new Date().getTime() - new Date(date).getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    
-    if (days > 0) return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
-    if (hours > 0) return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
-    return "À l'instant";
-  };
+  const getStatus = () => "Nouveau";
 
   return (
     <Card className="p-6">
@@ -69,7 +61,7 @@ export const DashboardNotifications = () => {
               {notifications.lastDonation.montant.toLocaleString()} Ar - {notifications.lastDonation.type}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {getTimeAgo(notifications.lastDonation.date_don)}
+              {getStatus()}
             </p>
           </div>
         )}
@@ -82,7 +74,7 @@ export const DashboardNotifications = () => {
               {Math.round((notifications.budgetAlert.montant_utilise / notifications.budgetAlert.montant_alloue) * 100)}% utilisé
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {getTimeAgo(notifications.budgetAlert.created_at)}
+              {getStatus()}
             </p>
           </div>
         )}
@@ -95,7 +87,7 @@ export const DashboardNotifications = () => {
               {notifications.pendingPledge.montant.toLocaleString()} Ar
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {getTimeAgo(notifications.pendingPledge.date_promesse)}
+              {getStatus()}
             </p>
           </div>
         )}
