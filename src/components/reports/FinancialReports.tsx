@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DonationReport } from "./donations/DonationReport";
 import { ExpenseReport } from "./expenses/ExpenseReport";
 import { ProjectManagementReport } from "./financial-statements/ProjectManagementReport";
-import { Notes } from "./financial-statements/Notes";
+import { TreasuryReport } from "./financial-statements/TreasuryReport";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { convertToJson } from "@/lib/typeUtils";
 import { FinancialData } from "@/types/financial";
@@ -181,7 +181,7 @@ export const FinancialReports = () => {
       <DonationReport />
       <ExpenseReport />
       <ProjectManagementReport />
-      <Notes data={financialData.notes} />
+      <TreasuryReport />
     </div>
   );
 };
