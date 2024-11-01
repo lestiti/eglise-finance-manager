@@ -4,18 +4,35 @@ import { FileText, Download, Printer, Eye } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { BalanceSheet } from "./financial-statements/BalanceSheet";
 import { IncomeStatement } from "./financial-statements/IncomeStatement";
 import { CashFlow } from "./financial-statements/CashFlow";
 import { Notes } from "./financial-statements/Notes";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export const FinancialReports = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  // Exemple de données pour les états financiers
-  const sampleData = {
+  const { data: financialData, isLoading } = useQuery({
+    queryKey: ['financial-statements'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('financial_statements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      return data?.[0]?.data || defaultFinancialData;
+    }
+  });
+
+  const defaultFinancialData = {
     bilan: {
       actifs_courants: {
         liquidites: 150000000,
@@ -111,41 +128,95 @@ export const FinancialReports = () => {
     },
   };
 
-  const handleExport = (format: string) => {
-    const blob = new Blob([JSON.stringify(sampleData, null, 2)], { 
-      type: format === 'pdf' ? 'application/pdf' : 'application/vnd.ms-excel' 
-    });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `rapport_financier.${format}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+  const handleExport = async (format: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('financial_statements')
+        .insert([
+          {
+            user_id: user?.id,
+            type: 'export',
+            periode: 'mensuel',
+            annee: new Date().getFullYear(),
+            mois: new Date().getMonth() + 1,
+            data: financialData
+          }
+        ])
+        .select()
+        .single();
 
-    toast({
-      title: "Export réussi",
-      description: `Le rapport a été exporté en format ${format}`,
-    });
-  };
+      if (error) throw error;
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '', 'height=600,width=800');
-    if (printWindow) {
-      printWindow.document.write('<html><head><title>Rapport Financier</title>');
-      printWindow.document.write('</head><body>');
-      printWindow.document.write('<pre>' + JSON.stringify(sampleData, null, 2) + '</pre>');
-      printWindow.document.write('</body></html>');
-      printWindow.document.close();
-      printWindow.print();
+      const blob = new Blob([JSON.stringify(financialData, null, 2)], { 
+        type: format === 'pdf' ? 'application/pdf' : 'application/vnd.ms-excel' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `rapport_financier.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export réussi",
+        description: `Le rapport a été exporté en format ${format}`,
+      });
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'export",
+        variant: "destructive",
+      });
     }
-
-    toast({
-      title: "Impression lancée",
-      description: "Le rapport est envoyé à l'imprimante",
-    });
   };
+
+  const handlePrint = async () => {
+    try {
+      const { error } = await supabase
+        .from('financial_statements')
+        .insert([
+          {
+            user_id: user?.id,
+            type: 'print',
+            periode: 'mensuel',
+            annee: new Date().getFullYear(),
+            mois: new Date().getMonth() + 1,
+            data: financialData
+          }
+        ]);
+
+      if (error) throw error;
+
+      const printWindow = window.open('', '', 'height=600,width=800');
+      if (printWindow) {
+        printWindow.document.write('<html><head><title>Rapport Financier</title>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<pre>' + JSON.stringify(financialData, null, 2) + '</pre>');
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+      }
+
+      toast({
+        title: "Impression lancée",
+        description: "Le rapport est envoyé à l'imprimante",
+      });
+    } catch (error) {
+      console.error('Erreur lors de l\'impression:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'impression",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <div>Chargement des données financières...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -176,10 +247,10 @@ export const FinancialReports = () => {
         </Button>
       </div>
 
-      <BalanceSheet data={sampleData.bilan} />
-      <IncomeStatement data={sampleData.compte_resultat} />
-      <CashFlow data={sampleData.flux_tresorerie} />
-      <Notes data={sampleData.notes} />
+      <BalanceSheet data={financialData.bilan} />
+      <IncomeStatement data={financialData.compte_resultat} />
+      <CashFlow data={financialData.flux_tresorerie} />
+      <Notes data={financialData.notes} />
     </div>
   );
 };

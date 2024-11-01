@@ -19,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const formSchema = z.object({
   type: z.string().min(1, "Veuillez sélectionner un type de rapport"),
@@ -28,6 +30,7 @@ const formSchema = z.object({
 
 export const ReportGenerator = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,12 +40,41 @@ export const ReportGenerator = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    toast({
-      title: "Génération du rapport",
-      description: "Le rapport est en cours de génération...",
-    });
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const currentDate = new Date();
+      const { error } = await supabase
+        .from('financial_statements')
+        .insert([
+          {
+            user_id: user?.id,
+            type: values.type,
+            periode: values.periode,
+            annee: currentDate.getFullYear(),
+            mois: values.periode === 'mensuel' ? currentDate.getMonth() + 1 : null,
+            trimestre: values.periode === 'trimestriel' ? Math.floor(currentDate.getMonth() / 3) + 1 : null,
+            data: {
+              generated: true,
+              format: values.format,
+              timestamp: currentDate.toISOString()
+            }
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Génération du rapport",
+        description: "Le rapport a été généré avec succès",
+      });
+    } catch (error) {
+      console.error('Erreur lors de la génération:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération du rapport",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

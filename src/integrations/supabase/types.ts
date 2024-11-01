@@ -82,6 +82,53 @@ export type Database = {
           },
         ]
       }
+      financial_statements: {
+        Row: {
+          annee: number
+          created_at: string | null
+          data: Json
+          id: string
+          mois: number | null
+          periode: string
+          trimestre: number | null
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          annee: number
+          created_at?: string | null
+          data: Json
+          id?: string
+          mois?: number | null
+          periode: string
+          trimestre?: number | null
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          annee?: number
+          created_at?: string | null
+          data?: Json
+          id?: string
+          mois?: number | null
+          periode?: string
+          trimestre?: number | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_statements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
