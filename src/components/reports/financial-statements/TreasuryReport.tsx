@@ -48,8 +48,7 @@ export const TreasuryReport = () => {
 
   const getBalanceStatus = () => {
     if (balanceRatio < 50) return "destructive";
-    if (balanceRatio < 80) return "warning";
-    return "success";
+    return "default";
   };
 
   const calculateMonthlyTrend = () => {
