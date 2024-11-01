@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ export const TwoFactorAuth = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [challengeId, setChallengeId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const setupTwoFactor = async () => {
@@ -31,8 +33,9 @@ export const TwoFactorAuth = () => {
 
       if (error) throw error;
 
-      if (data?.qr_code) {
-        setQrCode(data.qr_code);
+      if (data?.totp?.qr_code) {
+        setQrCode(data.totp.qr_code);
+        setFactorId(data.id);
       }
 
       // Log l'activation de la 2FA
@@ -45,6 +48,12 @@ export const TwoFactorAuth = () => {
             timestamp: new Date().toISOString(),
           },
         });
+
+      // Créer un challenge pour la vérification
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: data.id });
+      if (challengeError) throw challengeError;
+      
+      setChallengeId(challengeData.id);
 
       toast({
         title: "2FA Activée",
@@ -62,9 +71,19 @@ export const TwoFactorAuth = () => {
   };
 
   const verifyCode = async () => {
+    if (!factorId || !challengeId) {
+      toast({
+        title: "Erreur",
+        description: "Configuration 2FA incomplète",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase.auth.mfa.verify({
-        factorId: 'totp',
+        factorId,
+        challengeId,
         code: verificationCode
       });
 
