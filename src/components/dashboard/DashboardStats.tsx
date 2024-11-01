@@ -3,9 +3,7 @@ import {
   Banknote, 
   Users, 
   FolderKanban, 
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight
+  TrendingUp
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,78 +29,36 @@ export const DashboardStats = () => {
     }
   });
 
-  const { data: lastMonthDonations } = useQuery({
-    queryKey: ['last-month-donations'],
-    queryFn: async () => {
-      const startOfLastMonth = new Date();
-      startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
-      startOfLastMonth.setDate(1);
-      startOfLastMonth.setHours(0, 0, 0, 0);
-      
-      const { data, error } = await supabase
-        .from('donations')
-        .select('count')
-        .gte('date_don', startOfLastMonth.toISOString());
-      
-      if (error) throw error;
-      return data?.length || 0; // On vérifie juste s'il y a des données
-    }
-  });
-
   const { data: membersCount } = useQuery({
     queryKey: ['dashboard-members'],
     queryFn: async () => {
-      const { count: currentCount } = await supabase
+      const { count } = await supabase
         .from('members')
         .select('*', { count: 'exact', head: true })
         .eq('statut', 'actif');
       
-      const { count: hasHistory } = await supabase
-        .from('members')
-        .select('*', { count: 'exact', head: true })
-        .eq('statut', 'actif')
-        .lt('created_at', new Date().toISOString());
-      
-      return {
-        current: currentCount || 0,
-        hasHistory: hasHistory || 0
-      };
+      return count || 0;
     }
   });
 
-  const { data: projectsData } = useQuery({
+  const { data: projectsCount } = useQuery({
     queryKey: ['dashboard-projects'],
     queryFn: async () => {
-      const { data: currentProjects, error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('statut', 'en_cours');
       
-      const { count: hasHistory } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('statut', 'en_cours')
-        .lt('created_at', new Date().toISOString());
-      
       if (error) throw error;
-      
-      return {
-        count: currentProjects?.length || 0,
-        hasHistory: hasHistory || 0
-      };
+      return data?.length || 0;
     }
   });
-
-  const getStatusIndicator = (hasHistory: boolean | number) => {
-    if (!hasHistory) return "Nouveau";
-    return "En cours";
-  };
 
   const stats = [
     { 
       title: "Total des dons", 
       amount: `${(currentMonthDonations || 0).toLocaleString()} Ar`, 
-      change: lastMonthDonations === 0 ? "Nouveau" : "En cours",
+      change: "Nouveau",
       icon: Banknote,
       color: "text-green-600",
       bgColor: "bg-green-100",
@@ -110,8 +66,8 @@ export const DashboardStats = () => {
     },
     { 
       title: "Membres actifs", 
-      amount: membersCount?.current.toString() || "0", 
-      change: getStatusIndicator(membersCount?.hasHistory),
+      amount: membersCount?.toString() || "0", 
+      change: "Nouveau",
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
@@ -119,8 +75,8 @@ export const DashboardStats = () => {
     },
     { 
       title: "Projets en cours", 
-      amount: projectsData?.count.toString() || "0", 
-      change: getStatusIndicator(projectsData?.hasHistory),
+      amount: projectsCount?.toString() || "0", 
+      change: "Nouveau",
       icon: FolderKanban,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
