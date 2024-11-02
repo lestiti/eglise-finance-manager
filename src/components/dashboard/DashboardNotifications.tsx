@@ -5,40 +5,64 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
+// Extraction des fonctions de requête
+const fetchDonations = async () => {
+  const { data, error } = await supabase
+    .from('donations')
+    .select('*')
+    .order('date_don', { ascending: false })
+    .limit(1);
+  
+  if (error) throw error;
+  return data?.[0];
+};
+
+const fetchBudgets = async () => {
+  const { data, error } = await supabase
+    .from('budget_tracking')
+    .select('*, department_budgets(nom)')
+    .order('created_at', { ascending: false })
+    .limit(1);
+  
+  if (error) throw error;
+  return data?.[0];
+};
+
+const fetchPledges = async () => {
+  const { data, error } = await supabase
+    .from('donation_pledges')
+    .select('*, members(nom, prenom)')
+    .eq('statut', 'en_attente')
+    .order('date_promesse', { ascending: false })
+    .limit(1);
+  
+  if (error) throw error;
+  return data?.[0];
+};
+
 export const DashboardNotifications = () => {
   const navigate = useNavigate();
   
-  const { data: notifications } = useQuery({
-    queryKey: ['dashboard-notifications'],
-    queryFn: async () => {
-      const [donationsPromise, budgetsPromise, pledgesPromise] = await Promise.all([
-        supabase
-          .from('donations')
-          .select('*')
-          .order('date_don', { ascending: false })
-          .limit(1),
-        supabase
-          .from('budget_tracking')
-          .select('*, department_budgets(nom)')
-          .order('created_at', { ascending: false })
-          .limit(1),
-        supabase
-          .from('donation_pledges')
-          .select('*, members(nom, prenom)')
-          .eq('statut', 'en_attente')
-          .order('date_promesse', { ascending: false })
-          .limit(1)
-      ]);
-
-      return {
-        lastDonation: donationsPromise.data?.[0],
-        budgetAlert: budgetsPromise.data?.[0],
-        pendingPledge: pledgesPromise.data?.[0]
-      };
-    }
+  const { data: lastDonation } = useQuery({
+    queryKey: ['last-donation'],
+    queryFn: fetchDonations,
+    staleTime: 30000, // 30 secondes
+    cacheTime: 300000, // 5 minutes
   });
 
-  const getStatus = () => "Nouveau";
+  const { data: budgetAlert } = useQuery({
+    queryKey: ['budget-alert'],
+    queryFn: fetchBudgets,
+    staleTime: 30000,
+    cacheTime: 300000,
+  });
+
+  const { data: pendingPledge } = useQuery({
+    queryKey: ['pending-pledge'],
+    queryFn: fetchPledges,
+    staleTime: 30000,
+    cacheTime: 300000,
+  });
 
   return (
     <Card className="p-6">
@@ -54,45 +78,39 @@ export const DashboardNotifications = () => {
       </div>
       
       <div className="space-y-4">
-        {notifications?.lastDonation && (
+        {lastDonation && (
           <div className="border-b last:border-0 pb-4 last:pb-0">
             <h4 className="font-medium">Nouveau don reçu</h4>
             <p className="text-sm text-muted-foreground mt-1">
-              {notifications.lastDonation.montant.toLocaleString()} Ar - {notifications.lastDonation.type}
+              {lastDonation.montant.toLocaleString()} Ar - {lastDonation.type}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {getStatus()}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Nouveau</p>
           </div>
         )}
 
-        {notifications?.budgetAlert && (
+        {budgetAlert && (
           <div className="border-b last:border-0 pb-4 last:pb-0">
             <h4 className="font-medium">Alerte budget</h4>
             <p className="text-sm text-muted-foreground mt-1">
-              {notifications.budgetAlert.department_budgets?.nom} - 
-              {Math.round((notifications.budgetAlert.montant_utilise / notifications.budgetAlert.montant_alloue) * 100)}% utilisé
+              {budgetAlert.department_budgets?.nom} - 
+              {Math.round((budgetAlert.montant_utilise / budgetAlert.montant_alloue) * 100)}% utilisé
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {getStatus()}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Nouveau</p>
           </div>
         )}
 
-        {notifications?.pendingPledge && (
+        {pendingPledge && (
           <div className="border-b last:border-0 pb-4 last:pb-0">
             <h4 className="font-medium">Promesse de don en attente</h4>
             <p className="text-sm text-muted-foreground mt-1">
-              {notifications.pendingPledge.members?.nom} {notifications.pendingPledge.members?.prenom} - 
-              {notifications.pendingPledge.montant.toLocaleString()} Ar
+              {pendingPledge.members?.nom} {pendingPledge.members?.prenom} - 
+              {pendingPledge.montant.toLocaleString()} Ar
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {getStatus()}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Nouveau</p>
           </div>
         )}
 
-        {!notifications?.lastDonation && !notifications?.budgetAlert && !notifications?.pendingPledge && (
+        {!lastDonation && !budgetAlert && !pendingPledge && (
           <p className="text-sm text-muted-foreground">Aucune notification récente</p>
         )}
       </div>

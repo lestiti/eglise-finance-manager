@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useMemo } from "react";
 
 export const DashboardCharts = () => {
   const { data: transactions } = useQuery({
@@ -17,35 +18,42 @@ export const DashboardCharts = () => {
         .order('date_transaction', { ascending: true });
       
       if (error) throw error;
-
-      const monthlyData = data.reduce((acc: Record<string, { dons: number, depenses: number }>, transaction) => {
-        const month = new Date(transaction.date_transaction).toLocaleString('fr-FR', { month: 'short' });
-        if (!acc[month]) {
-          acc[month] = { dons: 0, depenses: 0 };
-        }
-        
-        if (transaction.type === 'don') {
-          acc[month].dons += Number(transaction.montant);
-        } else if (transaction.type === 'depense') {
-          acc[month].depenses += Number(transaction.montant);
-        }
-        
-        return acc;
-      }, {});
-
-      return Object.entries(monthlyData).map(([month, values]) => ({
-        month,
-        ...values
-      }));
-    }
+      return data;
+    },
+    staleTime: 300000, // 5 minutes
+    cacheTime: 3600000, // 1 heure
   });
+
+  const monthlyData = useMemo(() => {
+    if (!transactions) return [];
+    
+    const data = transactions.reduce((acc: Record<string, { dons: number, depenses: number }>, transaction) => {
+      const month = new Date(transaction.date_transaction).toLocaleString('fr-FR', { month: 'short' });
+      if (!acc[month]) {
+        acc[month] = { dons: 0, depenses: 0 };
+      }
+      
+      if (transaction.type === 'don') {
+        acc[month].dons += Number(transaction.montant);
+      } else if (transaction.type === 'depense') {
+        acc[month].depenses += Number(transaction.montant);
+      }
+      
+      return acc;
+    }, {});
+
+    return Object.entries(data).map(([month, values]) => ({
+      month,
+      ...values
+    }));
+  }, [transactions]);
 
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Évolution Financière</h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={transactions || []}>
+          <LineChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />
