@@ -21,7 +21,7 @@ export const DashboardCharts = () => {
       return data;
     },
     staleTime: 300000, // 5 minutes
-    cacheTime: 3600000, // 1 heure
+    gcTime: 3600000, // 1 heure
   });
 
   const monthlyData = useMemo(() => {

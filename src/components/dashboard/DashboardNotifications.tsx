@@ -47,21 +47,21 @@ export const DashboardNotifications = () => {
     queryKey: ['last-donation'],
     queryFn: fetchDonations,
     staleTime: 30000, // 30 secondes
-    cacheTime: 300000, // 5 minutes
+    gcTime: 300000, // 5 minutes
   });
 
   const { data: budgetAlert } = useQuery({
     queryKey: ['budget-alert'],
     queryFn: fetchBudgets,
     staleTime: 30000,
-    cacheTime: 300000,
+    gcTime: 300000,
   });
 
   const { data: pendingPledge } = useQuery({
     queryKey: ['pending-pledge'],
     queryFn: fetchPledges,
     staleTime: 30000,
-    cacheTime: 300000,
+    gcTime: 300000,
   });
 
   return (
