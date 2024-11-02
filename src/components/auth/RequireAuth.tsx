@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface RequireAuthProps {
 export const RequireAuth = ({ children, requireAdmin = false }: RequireAuthProps) => {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading) {
