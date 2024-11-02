@@ -46,6 +46,27 @@ export const TransactionList = () => {
 
   useEffect(() => {
     fetchTransactions();
+
+    // Souscrire aux changements en temps réel
+    const subscription = supabase
+      .channel('transactions-changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'transactions' 
+        }, 
+        (payload) => {
+          console.log('Changement détecté:', payload);
+          fetchTransactions(); // Recharger les données
+        }
+      )
+      .subscribe();
+
+    // Nettoyer la souscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
@@ -68,8 +89,6 @@ export const TransactionList = () => {
       title: "Succès",
       description: "Le statut a été mis à jour avec succès",
     });
-
-    fetchTransactions();
   };
 
   const getStatusBadge = (status: string) => {
