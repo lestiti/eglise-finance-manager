@@ -17,11 +17,10 @@ export const useLiquidityData = () => {
         id: item.id,
         date: item.date_mouvement,
         type: item.type,
+        categorie: item.categorie,
         montant: item.montant,
         description: item.description,
-        statut: item.statut,
-        methode_paiement: item.methode_paiement,
-        numero_facture: item.numero_facture || null,
+        solde_apres: item.solde_apres
       }));
 
       return formattedData;
