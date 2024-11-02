@@ -1,6 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface TreasuryMovement {
+  id: string;
+  date: string;
+  type: string;
+  categorie: string;
+  montant: number;
+  description: string | null;
+  solde_apres: number;
+}
+
 export const useLiquidityData = () => {
   return useQuery({
     queryKey: ['liquidity-data'],
@@ -12,8 +22,7 @@ export const useLiquidityData = () => {
 
       if (treasuryError) throw treasuryError;
 
-      // Transformer les données pour correspondre au format attendu
-      const formattedData = treasuryData.map(item => ({
+      const formattedData: TreasuryMovement[] = (treasuryData || []).map(item => ({
         id: item.id,
         date: item.date_mouvement,
         type: item.type,
