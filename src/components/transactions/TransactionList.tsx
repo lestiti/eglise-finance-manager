@@ -25,70 +25,85 @@ export const TransactionList = () => {
   const { user } = useAuth();
 
   const fetchTransactions = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('transactions')
-      .select('*')
-      .order('date_transaction', { ascending: false });
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('transactions')
+        .select('*')
+        .order('date_transaction', { ascending: false });
 
-    if (error) {
+      // Si l'utilisateur n'est pas admin, filtrer par user_id
+      if (user?.role !== 'admin') {
+        query = query.eq('user_id', user?.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      setTransactions(data || []);
+    } catch (error) {
       toast({
         title: "Erreur",
         description: "Impossible de charger les transactions",
         variant: "destructive",
       });
       console.error('Erreur:', error);
-    } else {
-      setTransactions(data || []);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
-    fetchTransactions();
+    if (user) {
+      fetchTransactions();
 
-    // Souscrire aux changements en temps réel
-    const subscription = supabase
-      .channel('transactions-changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'transactions' 
-        }, 
-        (payload) => {
-          console.log('Changement détecté:', payload);
-          fetchTransactions(); // Recharger les données
-        }
-      )
-      .subscribe();
+      // Souscrire aux changements en temps réel
+      const channel = supabase
+        .channel('transactions-changes')
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'transactions' 
+          }, 
+          () => {
+            fetchTransactions();
+          }
+        )
+        .subscribe();
 
-    // Nettoyer la souscription
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+      return () => {
+        channel.unsubscribe();
+      };
+    }
+  }, [user]);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('transactions')
-      .update({ statut: newStatus })
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ statut: newStatus })
+        .eq('id', id);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Le statut a été mis à jour avec succès",
+      });
+
+      fetchTransactions();
+    } catch (error) {
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
       console.error('Erreur:', error);
-      return;
     }
-
-    toast({
-      title: "Succès",
-      description: "Le statut a été mis à jour avec succès",
-    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -136,7 +151,7 @@ export const TransactionList = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-bold">{transaction.montant.toLocaleString()} Ariary</p>
-                  {transaction.statut === 'en_attente' && (
+                  {transaction.statut === 'en_attente' && user?.role === 'admin' && (
                     <div className="flex gap-2 mt-2">
                       <Button 
                         size="sm" 
