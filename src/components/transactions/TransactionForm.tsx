@@ -11,6 +11,7 @@ import { fr } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const TransactionForm = () => {
   const [date, setDate] = useState<Date>(new Date());
@@ -23,6 +24,7 @@ export const TransactionForm = () => {
   
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +60,9 @@ export const TransactionForm = () => {
         title: "Succès",
         description: "La transaction a été enregistrée avec succès",
       });
+
+      // Invalider le cache des transactions pour forcer un rechargement
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
 
       // Reset form
       setType("");

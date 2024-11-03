@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Transaction {
   id: string;
@@ -19,67 +20,32 @@ interface Transaction {
 }
 
 export const TransactionList = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ['transactions', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
       let query = supabase
         .from('transactions')
         .select('*')
         .order('date_transaction', { ascending: false });
 
-      // Si l'utilisateur n'est pas admin, filtrer par user_id
       if (user?.role !== 'admin') {
         query = query.eq('user_id', user?.id);
       }
 
       const { data, error } = await query;
 
-      if (error) {
-        throw error;
-      }
-
-      setTransactions(data || []);
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les transactions",
-        variant: "destructive",
-      });
-      console.error('Erreur:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchTransactions();
-
-      // Souscrire aux changements en temps réel
-      const channel = supabase
-        .channel('transactions-changes')
-        .on('postgres_changes', 
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'transactions' 
-          }, 
-          () => {
-            fetchTransactions();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        channel.unsubscribe();
-      };
-    }
-  }, [user]);
+      if (error) throw error;
+      return data as Transaction[];
+    },
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    cacheTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
+  });
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
@@ -95,14 +61,13 @@ export const TransactionList = () => {
         description: "Le statut a été mis à jour avec succès",
       });
 
-      fetchTransactions();
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     } catch (error) {
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
-      console.error('Erreur:', error);
     }
   };
 
@@ -117,7 +82,7 @@ export const TransactionList = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="p-6 flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin" />
