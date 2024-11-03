@@ -35,45 +35,47 @@ export const TransactionForm = () => {
       return;
     }
 
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('transactions')
-      .insert([
-        {
-          user_id: user.id,
-          type,
-          montant: parseFloat(montant),
-          methode_paiement: methodePaiement,
-          description,
-          numero_facture: numeroFacture,
-          date_transaction: date.toISOString(),
-        }
-      ]);
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('transactions')
+        .insert([
+          {
+            user_id: user.id,
+            type,
+            montant: parseFloat(montant),
+            methode_paiement: methodePaiement,
+            description,
+            numero_facture: numeroFacture,
+            date_transaction: date.toISOString(),
+            statut: 'en_attente'
+          }
+        ]);
 
-    setLoading(false);
+      if (error) throw error;
 
-    if (error) {
+      toast({
+        title: "Succès",
+        description: "La transaction a été enregistrée avec succès",
+      });
+
+      // Reset form
+      setType("");
+      setMethodePaiement("");
+      setMontant("");
+      setDescription("");
+      setNumeroFacture("");
+      setDate(new Date());
+    } catch (error) {
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'enregistrement de la transaction",
         variant: "destructive",
       });
       console.error('Erreur:', error);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    toast({
-      title: "Succès",
-      description: "La transaction a été enregistrée avec succès",
-    });
-
-    // Reset form
-    setType("");
-    setMethodePaiement("");
-    setMontant("");
-    setDescription("");
-    setNumeroFacture("");
-    setDate(new Date());
   };
 
   return (
@@ -116,6 +118,7 @@ export const TransactionForm = () => {
               placeholder="0 Ariary" 
               value={montant}
               onChange={(e) => setMontant(e.target.value)}
+              required
             />
           </div>
 
@@ -155,6 +158,7 @@ export const TransactionForm = () => {
             placeholder="Description de la transaction" 
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            required
           />
         </div>
 
