@@ -57,21 +57,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavigationBar />
-      <div className="container mx-auto p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Tableau de Bord</h1>
-          <div className="flex gap-2">
+      <div className="container mx-auto p-4 sm:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold">Tableau de Bord</h1>
+          <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
             {quickActions.map((action) => (
               <Button
                 key={action.title}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm"
                 onClick={action.onClick}
               >
                 <div className={`p-1 rounded-full ${action.bgColor}`}>
                   <action.icon className={`h-4 w-4 ${action.color}`} />
                 </div>
-                {action.title}
+                <span className="hidden sm:inline">{action.title}</span>
               </Button>
             ))}
           </div>
@@ -79,7 +79,7 @@ const Index = () => {
 
         <div className="grid gap-6">
           <DashboardStats />
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-6">
             <DashboardCharts />
             <DashboardNotifications />
           </div>

@@ -12,10 +12,16 @@ import {
   FolderKanban,
   UserCog,
   LogOut,
-  Shield
+  Shield,
+  Menu
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/auth/AuthProvider";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export const NavigationBar = () => {
   const navigate = useNavigate();
@@ -37,61 +43,82 @@ export const NavigationBar = () => {
     };
   }, []);
 
+  const NavButton = ({ icon: Icon, label, onClick }: { icon: any, label: string, onClick: () => void }) => (
+    <Button variant="ghost" onClick={onClick} className="flex items-center gap-2 w-full justify-start">
+      <Icon className="h-5 w-5" />
+      {label}
+    </Button>
+  );
+
+  const NavigationContent = () => (
+    <>
+      <NavButton icon={Home} label="Accueil" onClick={() => navigate("/")} />
+      <NavButton icon={PlusCircle} label="Transactions" onClick={() => navigate("/transactions")} />
+      <NavButton icon={FileText} label="Rapports" onClick={() => navigate("/rapports")} />
+      <NavButton icon={Users} label="Membres" onClick={() => navigate("/membres")} />
+      <NavButton icon={Wallet} label="Budgets" onClick={() => navigate("/budgets")} />
+      <NavButton icon={Banknote} label="Trésorerie" onClick={() => navigate("/tresorerie")} />
+      <NavButton icon={FolderKanban} label="Projets" onClick={() => navigate("/projets")} />
+      {isAdmin && (
+        <>
+          <NavButton icon={UserCog} label="Utilisateurs" onClick={() => navigate("/utilisateurs")} />
+          <NavButton icon={Shield} label="Sécurité" onClick={() => navigate("/securite")} />
+        </>
+      )}
+      <NavButton icon={Settings} label="Paramètres" onClick={() => navigate("/parametres")} />
+      <NavButton icon={LogOut} label="Déconnexion" onClick={signOut} />
+    </>
+  );
+
   return (
     <div className="bg-white border-b p-4 sticky top-0 z-50">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="container mx-auto">
+        {/* Version mobile */}
+        <div className="md:hidden flex justify-between items-center">
           <Button variant="ghost" onClick={() => navigate("/")} className="flex items-center gap-2">
             <Home className="h-5 w-5" />
             Accueil
           </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <div className="flex flex-col gap-2 mt-6">
+                <NavigationContent />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate("/transactions")} className="flex items-center gap-2">
-            <PlusCircle className="h-5 w-5" />
-            Transactions
+
+        {/* Version desktop */}
+        <div className="hidden md:flex items-center justify-between">
+          <Button variant="ghost" onClick={() => navigate("/")} className="flex items-center gap-2">
+            <Home className="h-5 w-5" />
+            Accueil
           </Button>
-          <Button variant="outline" onClick={() => navigate("/rapports")} className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Rapports
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/membres")} className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Membres
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/budgets")} className="flex items-center gap-2">
-            <Wallet className="h-5 w-5" />
-            Budgets
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/tresorerie")} className="flex items-center gap-2">
-            <Banknote className="h-5 w-5" />
-            Trésorerie
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/projets")} className="flex items-center gap-2">
-            <FolderKanban className="h-5 w-5" />
-            Projets
-          </Button>
-          {isAdmin && (
-            <>
-              <Button variant="outline" onClick={() => navigate("/utilisateurs")} className="flex items-center gap-2">
-                <UserCog className="h-5 w-5" />
-                Utilisateurs
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/securite")} className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Sécurité
-              </Button>
-            </>
-          )}
-          <Button variant="outline" onClick={() => navigate("/parametres")} className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Paramètres
-          </Button>
-          <Button variant="destructive" onClick={signOut} className="flex items-center gap-2">
-            <LogOut className="h-5 w-5" />
-            Déconnexion
-          </Button>
+          
+          <div className="flex items-center gap-2">
+            <NavButton icon={PlusCircle} label="Transactions" onClick={() => navigate("/transactions")} />
+            <NavButton icon={FileText} label="Rapports" onClick={() => navigate("/rapports")} />
+            <NavButton icon={Users} label="Membres" onClick={() => navigate("/membres")} />
+            <NavButton icon={Wallet} label="Budgets" onClick={() => navigate("/budgets")} />
+            <NavButton icon={Banknote} label="Trésorerie" onClick={() => navigate("/tresorerie")} />
+            <NavButton icon={FolderKanban} label="Projets" onClick={() => navigate("/projets")} />
+            {isAdmin && (
+              <>
+                <NavButton icon={UserCog} label="Utilisateurs" onClick={() => navigate("/utilisateurs")} />
+                <NavButton icon={Shield} label="Sécurité" onClick={() => navigate("/securite")} />
+              </>
+            )}
+            <NavButton icon={Settings} label="Paramètres" onClick={() => navigate("/parametres")} />
+            <Button variant="destructive" onClick={signOut} className="flex items-center gap-2">
+              <LogOut className="h-5 w-5" />
+              Déconnexion
+            </Button>
+          </div>
         </div>
       </div>
     </div>
