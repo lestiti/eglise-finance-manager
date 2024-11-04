@@ -37,6 +37,15 @@ export const TransactionForm = () => {
       return;
     }
 
+    if (!type || !methodePaiement || !montant) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const { error } = await supabase
@@ -71,13 +80,13 @@ export const TransactionForm = () => {
       setDescription("");
       setNumeroFacture("");
       setDate(new Date());
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erreur:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'enregistrement de la transaction",
+        description: error.message || "Une erreur est survenue lors de l'enregistrement de la transaction",
         variant: "destructive",
       });
-      console.error('Erreur:', error);
     } finally {
       setLoading(false);
     }
