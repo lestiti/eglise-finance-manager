@@ -38,13 +38,22 @@ export const DonationHistory = () => {
       const { data, error } = await supabase
         .from('donations')
         .select(`
-          *,
-          member:members(nom, prenom)
+          id,
+          date_don,
+          type,
+          montant,
+          source,
+          member:members!inner(nom, prenom)
         `)
         .order('date_don', { ascending: false });
 
       if (error) throw error;
-      return data as Donation[];
+      
+      // Transform the data to match our interface
+      return (data as any[]).map(donation => ({
+        ...donation,
+        member: donation.member[0] // Get the first member from the array
+      })) as Donation[];
     }
   });
 
