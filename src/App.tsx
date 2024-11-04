@@ -9,7 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 
-// Lazy load pages
+// Lazy load pages avec prefetch
 const LoginPage = lazy(() => import("./pages/auth/login"));
 const Index = lazy(() => import("./pages/Index"));
 const TransactionsPage = lazy(() => import("./pages/transactions"));
@@ -22,17 +22,19 @@ const UtilisateursPage = lazy(() => import("./pages/utilisateurs"));
 const SecuritePage = lazy(() => import("./pages/securite"));
 const ParametresPage = lazy(() => import("./pages/parametres"));
 
+// Configuration optimisée du QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes
     },
   },
 });
 
+// Composant de chargement optimisé
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
